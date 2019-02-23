@@ -11,9 +11,9 @@ Cell Phone Service Provider
 - Web project
 - Use ODBC
 ###### Functionality
-- Admin csn manage abonent connection
+- Admin can manage customer connection
 - Customer can select one or more services
-- Customer can pay the bill for calls and services
+- Customer can pay a bill for calls and services
 - Admin can get list of unpaid bills
 - Admin can ban Customer
 
