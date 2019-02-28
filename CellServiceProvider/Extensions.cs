@@ -23,6 +23,7 @@ namespace CellServiceProvider
 
             return ts.Count() == 1 && predicate(ts.Single());
         }
+
     }
 
 }

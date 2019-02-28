@@ -14,18 +14,37 @@ namespace CellServiceProvider.Controllers
     {
         private void TestEntities()
         {
-            string connString = "Server=172.18.0.1;Port=11;Database=postgres;User Id=postgres;Password=admin;";
+            string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
 
             DbContext dbContext = new DbContext(connString);
 
-            var userGroup = new UserGroup(dbContext);
+            //var userGroup = new UserGroup(dbContext);
 
-            userGroup.Id = 12;
-            userGroup.Name = "admin";
+            //userGroup.Id = 12;
+            //userGroup.Name = "monk";
 
-            userGroup.Commit();
+            //userGroup.Commit();
 
-            new NpgsqlCommand().
+
+            //var user = new User(dbContext)
+            //{
+            //    Id = 1,
+            //    NickName = "prizrak",
+            //    GroupId = 12,
+            //    //FullName = "Pavlo",
+            //    Password = "admin",
+            //};
+
+            //user.Commit();
+
+            var bill = new Bill(dbContext)
+            {
+                UserId = 12,
+
+            };
+
+            bill.Commit();
+
         }
 
         private void TestConnection()
