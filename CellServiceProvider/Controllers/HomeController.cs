@@ -12,11 +12,25 @@ namespace CellServiceProvider.Controllers
 {
     public class HomeController : Controller
     {
-        private void TestConnection()
+        private void TestEntities()
         {
             string connString = "Server=172.18.0.1;Port=11;Database=postgres;User Id=postgres;Password=admin;";
 
+            DbContext dbContext = new DbContext(connString);
 
+            var userGroup = new UserGroup(dbContext);
+
+            userGroup.Id = 12;
+            userGroup.Name = "admin";
+
+            userGroup.Commit();
+
+            new NpgsqlCommand().
+        }
+
+        private void TestConnection()
+        {
+            string connString = "Server=172.18.0.1;Port=11;Database=postgres;User Id=postgres;Password=admin;";
 
             using (var conn = new NpgsqlConnection(connString))
             {
@@ -41,10 +55,16 @@ namespace CellServiceProvider.Controllers
 
         }
 
+        private void Conn_Notification(object sender, NpgsqlNotificationEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         public IActionResult Index()
         {
             TestConnection();
+
+            TestEntities();
 
             return View();
         }
