@@ -1,4 +1,5 @@
 ﻿using System;
+using DbFramework;
 
 namespace CellServiceProvider.Models
 {

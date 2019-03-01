@@ -1,4 +1,6 @@
-﻿namespace CellServiceProvider.Models
+﻿using DbFramework;
+
+namespace CellServiceProvider.Models
 {
     [Table("users_to_services")]
     public class UserToService : Entity

@@ -10,7 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.4.2" />
-    <PackageReference Include="Npgsql" Version="4.0.4" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DbFramework\DbFramework.csproj" />
   </ItemGroup>
 
 

@@ -1,4 +1,6 @@
-﻿namespace CellServiceProvider.Models
+﻿using DbFramework;
+
+namespace CellServiceProvider.Models
 {
     [Table("services")]
     public class Service : Entity

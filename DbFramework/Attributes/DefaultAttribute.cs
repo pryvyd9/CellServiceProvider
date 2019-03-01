@@ -1,10 +1,11 @@
 ﻿using System;
 
-namespace CellServiceProvider.Models
+namespace DbFramework
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    internal sealed class NullableAttribute : Attribute
-    {
 
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    public sealed class DefaultAttribute : Attribute
+    {
+      
     }
 }

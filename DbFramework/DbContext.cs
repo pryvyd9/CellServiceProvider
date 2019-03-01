@@ -4,7 +4,7 @@ using Npgsql;
 using System.Linq;
 using System;
 
-namespace CellServiceProvider.Models
+namespace DbFramework
 {
     public class DbContext
     {
@@ -30,7 +30,7 @@ namespace CellServiceProvider.Models
 
 
 
-        internal ISet<T> SelectAll<T>() where T : Entity
+        public ISet<T> SelectAll<T>() where T : Entity
         {
             var tableAttribute = typeof(T)
                    .GetCustomAttributes(false)
@@ -47,7 +47,7 @@ namespace CellServiceProvider.Models
             return entities;
         }
 
-        internal void DeleteAll<T>()
+        public void DeleteAll<T>()
         {
             var tableAttribute = typeof(T)
                   .GetCustomAttributes(false)

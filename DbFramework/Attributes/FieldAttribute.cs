@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace CellServiceProvider.Models
+namespace DbFramework
 {
    
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    internal class FieldAttribute : Attribute
+    public class FieldAttribute : Attribute
     {
-        internal string Name { get; }
+        public string Name { get; }
 
-        internal FieldAttribute(string name)
+        public FieldAttribute(string name)
         {
             Name = name;
         }

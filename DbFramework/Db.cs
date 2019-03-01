@@ -1,4 +1,4 @@
-﻿namespace CellServiceProvider.Models
+﻿namespace DbFramework
 {
 
     public struct Db<T> : IDbField

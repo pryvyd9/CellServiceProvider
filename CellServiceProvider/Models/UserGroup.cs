@@ -1,4 +1,6 @@
-﻿namespace CellServiceProvider.Models
+﻿using DbFramework;
+
+namespace CellServiceProvider.Models
 {
     [Table("user_groups")]
     public sealed class UserGroup : Entity

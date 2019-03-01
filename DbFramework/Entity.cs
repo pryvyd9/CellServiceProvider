@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace CellServiceProvider.Models
+namespace DbFramework
 {
     public abstract class Entity
     {
@@ -41,72 +41,6 @@ namespace CellServiceProvider.Models
             //addMethod.Invoke(propVal, new[] { this });
         }
 
-        //private List<(PropertyInfo, object)> GetValues(IEnumerable<PropertyInfo> properties)
-        //{
-        //    var values = new List<(PropertyInfo, object)>();
-
-        //    foreach (var (property, value) in properties.Select(n => (n, (IDbField)n.GetValue(this))))
-        //    {
-        //        var attributes = property.GetCustomAttributes(false);
-
-        //        if (!value.IsAssigned)
-        //        {
-        //            if (Has<DefaultOverrideAttribute>(out var defaultOverrideAttribute))
-        //            {
-        //                var defaultValue = defaultOverrideAttribute.Value;
-
-        //                if (defaultValue == null)
-        //                {
-        //                    if (Has<NullableAttribute>(out var nullableAttribute))
-        //                    {
-        //                        Add(null);
-        //                    }
-        //                    else
-        //                    {
-        //                        throw new Exception("Non nullable field cannot have null as default value.");
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    Add(defaultValue);
-        //                }
-        //            }
-        //            else
-        //            {
-        //                if (Has<DefaultAttribute>(out var defaultAttribute))
-        //                {
-        //                    continue;
-        //                }
-        //                else
-        //                {
-        //                    throw new Exception("Field with no default value was not assigned.");
-        //                }
-        //            }
-        //        }
-        //        else if (value.IsNull)
-        //        {
-        //            if (Has<NullableAttribute>(out var nullableAttribute))
-        //            {
-        //                Add(null);
-        //            }
-        //            else
-        //            {
-        //                throw new Exception("Not nullable field was assigned with null.");
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Add(value.Value);
-        //        }
-
-        //        bool Has<T>(out T attribute) => (attribute = attributes.OfType<T>().FirstOrDefault()) != null;
-
-        //        void Add(object val) => values.Add((property, val));
-        //    }
-
-        //    return values;
-
-        //}
 
         private Dictionary<string, object> GetValues(IEnumerable<PropertyInfo> properties)
         {

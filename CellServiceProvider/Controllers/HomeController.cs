@@ -5,8 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CellServiceProvider.Models;
-
-using Npgsql;
+using DbFramework;
 
 namespace CellServiceProvider.Controllers
 {
@@ -18,45 +17,12 @@ namespace CellServiceProvider.Controllers
 
             DbContext dbContext = new DbContext(connString);
 
-            var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value?[0] == 'p');
+            var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value[0] == 'p');
         }
 
-        private void TestConnection()
-        {
-            string connString = "Server=172.18.0.1;Port=11;Database=postgres;User Id=postgres;Password=admin;";
-
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                conn.Open();
-
-                Debug.WriteLine("CONNECTION SUCCESS");
-
-                using (var cmd = new NpgsqlCommand())
-                {
-                    cmd.Connection = conn;
-                    cmd.CommandText = "select * from my_table;";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            Debug.WriteLine(reader.GetString(1));
-                        }
-                    }
-                }
-            }
-
-
-        }
-
-        private void Conn_Notification(object sender, NpgsqlNotificationEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
         public IActionResult Index()
         {
-            TestConnection();
-
             TestEntities();
 
             return View();
