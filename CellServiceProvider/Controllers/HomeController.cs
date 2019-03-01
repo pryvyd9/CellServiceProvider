@@ -26,24 +26,23 @@ namespace CellServiceProvider.Controllers
             //userGroup.Commit();
 
 
-            //var user = new User(dbContext)
-            //{
-            //    Id = 1,
-            //    NickName = "prizrak",
-            //    GroupId = 12,
-            //    //FullName = "Pavlo",
-            //    Password = "admin",
-            //};
-
-            //user.Commit();
-
-            var bill = new Bill(dbContext)
+            var user = new User(dbContext)
             {
-                UserId = 12,
-
+                NickName = "prizrak",
+                GroupId = 12,
+                //FullName = "Pavlo",
+                Password = "admin",
             };
 
-            bill.Commit();
+            user.Commit();
+
+            //var bill = new Bill(dbContext)
+            //{
+            //    UserId = 12,
+
+            //};
+
+            //bill.Commit();
 
         }
 

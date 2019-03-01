@@ -9,16 +9,16 @@
 
         [Default]
         [Key("id")]
-        public long? Id { get; set; }
+        public Db<long> Id { get; set; }
 
         [Field("name")]
-        public string Name { get; set; }
+        public Db<string> Name { get; set; }
 
         [Field("description")]
-        public string Description { get; set; }
+        public Db<string> Description { get; set; }
 
         [Default]
         [Field("cost")]
-        public decimal? Cost { get; set; }
+        public Db<decimal> Cost { get; set; }
     }
 }

@@ -17,19 +17,20 @@ namespace CellServiceProvider.Models
         public Db<long> Id { get; set; }
 
         [Field("nickname")]
-        public string NickName { get; set; }
+        public Db<string> NickName { get; set; }
 
         [Nullable]
         [Field("full_name")]
-        public string FullName { get; set; }
+        public Db<string> FullName { get; set; }
 
         [Field("group_id")]
-        public long GroupId { get; set; }
+        public Db<long> GroupId { get; set; }
 
+        [Default]
         [Field("is_active")]
-        public bool IsActive { get; set; }
+        public Db<bool> IsActive { get; set; }
 
         [Field("password")]
-        public string Password { get; set; }
+        public Db<string> Password { get; set; }
     }
 }

@@ -22,24 +22,6 @@ namespace CellServiceProvider.Models
         public HashSet<User> Users { get; } = new HashSet<User>();
         public HashSet<Bill> Bills { get; } = new HashSet<Bill>();
 
-        //internal void Commit(string statement)
-        //{
-        //    using (var conn = new NpgsqlConnection(connString))
-        //    {
-        //        conn.Open();
-
-        //        //Debug.WriteLine("CONNECTION SUCCESS");
-
-        //        using (var cmd = new NpgsqlCommand())
-        //        {
-        //            cmd.Connection = conn;
-        //            cmd.CommandText = statement;
-        //            cmd.ExecuteNonQuery();
-        //        }
-        //    }
-        //}
-
-
         internal void Commit(NpgsqlCommand command)
         {
             using (var conn = new NpgsqlConnection(connString))
