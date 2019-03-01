@@ -11,10 +11,10 @@ namespace CellServiceProvider.Models
 
         [Default]
         [Key("id")]
-        public Db<long> Id { get; set; }
+        public Db<int> Id { get; set; }
 
         [Field("user_id")]
-        public Db<long> UserId { get; set; }
+        public Db<int> UserId { get; set; }
 
         [Default]
         [Field("cost")]

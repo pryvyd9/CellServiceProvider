@@ -1,13 +1,5 @@
 ﻿namespace CellServiceProvider.Models
 {
-    public interface IDbField
-    {
-        bool IsAssigned { get; }
-
-        bool IsNull { get; }
-
-        object Value { get; }
-    }
 
     public struct Db<T> : IDbField
     {
@@ -80,16 +72,6 @@
                 IsAssigned = true
             };
         }
-
-        //public static implicit operator Db<object>(Db<T> db)
-        //{
-        //    return new Db<object>
-        //    {
-        //        Value = db,
-        //        IsAssigned = db.IsAssigned,
-        //        IsNull = db.IsNull
-        //    };
-        //}
 
     }
 }

@@ -217,17 +217,32 @@ namespace CellServiceProvider.Models
 
             var values = GetValues(properties);
 
-            var keyNames = properties
-                .Where(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Any())
-                .Select(n => n.Name);
+            var keys = properties
+                .Where(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Any());
+
+            var keyNames = keys
+                .Select(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Single().Name);
+
+            var nonKeyNames = properties
+                .Except(keys)
+                .Select(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Single().Name);
 
             var builder = new StringBuilder()
                 .Append($"insert into \"{tableAttribute.Name}\" (")
                 .AppendJoin(",", values.Keys.Select(n => $"\"{n}\""))
                 .Append(") values (")
-                .AppendJoin(",", values.Keys.Select(n=>$"@{n}"))
-                .Append($") on conflict ({string.Join(",", keyNames)}) do update set ")
-                .AppendJoin(",", values.Keys.Select(n => $"{n} = excluded.{n}"));
+                .AppendJoin(",", values.Keys.Select(n => $"@{n}"))
+                .Append(")");
+
+            if (nonKeyNames.Any())
+            {
+                builder
+                    .Append($" on conflict (")
+                    .AppendJoin(",", keyNames.Select(n => $"\"{n}\""))
+                    .Append(") do update set ")
+                    .AppendJoin(",", nonKeyNames.Select(n => $"\"{n}\" = excluded.\"{n}\""));
+            }
+                
 
 
             // Prepare statement

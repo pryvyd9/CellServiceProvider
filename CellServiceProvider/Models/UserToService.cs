@@ -8,9 +8,9 @@
         }
 
         [Key("user_id")]
-        public long? UserId { get; set; }
+        public Db<int> UserId { get; set; }
 
         [Key("service_id")]
-        public long? ServiceId { get; set; }
+        public Db<int> ServiceId { get; set; }
     }
 }

@@ -10,14 +10,9 @@ namespace CellServiceProvider.Models
     {
         private readonly string connString;
 
-        //private readonly NpgsqlConnection connection;
-
         public DbContext(string connString)
         {
             this.connString = connString;
-
-            
-
         }
 
 
@@ -32,6 +27,8 @@ namespace CellServiceProvider.Models
                 command.ExecuteNonQuery();
             }
         }
+
+
 
         internal ISet<T> SelectAll<T>() where T : Entity
         {
@@ -49,6 +46,24 @@ namespace CellServiceProvider.Models
 
             return entities;
         }
+
+        internal void DeleteAll<T>()
+        {
+            var tableAttribute = typeof(T)
+                  .GetCustomAttributes(false)
+                  .OfType<TableAttribute>()
+                  .Single();
+
+            var command = new NpgsqlCommand
+            {
+                CommandText = $"delete from \"{tableAttribute.Name}\"",
+            };
+
+            Delete(command);
+        }
+
+
+
 
         private ISet<T> Select<T>(NpgsqlCommand command) where T : Entity
         {
@@ -132,6 +147,19 @@ namespace CellServiceProvider.Models
             }
 
             return set;
+        }
+
+        private void Delete(NpgsqlCommand command)
+        {
+            using (var conn = new NpgsqlConnection(connString))
+            {
+                conn.Open();
+
+                command.Connection = conn;
+                command.Prepare();
+
+                command.ExecuteNonQuery();
+            }
         }
     }
 }

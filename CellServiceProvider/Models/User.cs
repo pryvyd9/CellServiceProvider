@@ -14,7 +14,7 @@ namespace CellServiceProvider.Models
 
         [Default]
         [Key("id")]
-        public Db<long> Id { get; set; }
+        public Db<int> Id { get; set; }
 
         [Field("nickname")]
         public Db<string> NickName { get; set; }
@@ -24,7 +24,7 @@ namespace CellServiceProvider.Models
         public Db<string> FullName { get; set; }
 
         [Field("group_id")]
-        public Db<long> GroupId { get; set; }
+        public Db<int> GroupId { get; set; }
 
         [Default]
         [Field("is_active")]

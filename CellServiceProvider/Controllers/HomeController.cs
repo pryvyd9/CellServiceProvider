@@ -18,34 +18,25 @@ namespace CellServiceProvider.Controllers
 
             DbContext dbContext = new DbContext(connString);
 
-            //var userGroup = new UserGroup(dbContext);
 
-            //userGroup.Id = 12;
-            //userGroup.Name = "monk";
+            //dbContext.DeleteAll<Service>();
 
-            //userGroup.Commit();
-
-
-            //var user = new User(dbContext)
+            //var service = new Service(dbContext)
             //{
-            //    NickName = "prizrak",
-            //    GroupId = 12,
-            //    //FullName = "Pavlo",
-            //    Password = "admin",
+            //    Name = "internet",
             //};
 
-            //user.Commit();
+            //service.Commit();
 
-            //var bill = new Bill(dbContext)
+            //var userToService = new UserToService(dbContext)
             //{
-            //    UserId = 12,
-
+            //    UserId = 5,
+            //    ServiceId = 1,
             //};
 
-            //bill.Commit();
+            //userToService.Commit();
 
-            var userGroups = dbContext.SelectAll<User>();
-
+            //var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value[0] == 'p');
         }
 
         private void TestConnection()

@@ -9,11 +9,12 @@
 
         [Default]
         [Key("id")]
-        public Db<long> Id { get; set; }
+        public Db<int> Id { get; set; }
 
         [Field("name")]
         public Db<string> Name { get; set; }
 
+        [Default]
         [Field("description")]
         public Db<string> Description { get; set; }
 
