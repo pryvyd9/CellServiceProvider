@@ -66,3 +66,19 @@ Cell Phone Service Provider
 	- to container `docker cp foo.txt CONTAINER:/foo.txt` 
 	- to host `docker cp CONTAINER:/foo.txt foo.txt` 
 - Enable container bash `docker exec -it CONTAINER bash` [link](https://medium.com/@lvthillo/connect-from-local-machine-to-postgresql-docker-container-f785f00461a7)
+
+## Database
+- All operations go through DbContext
+- new User(dbContext){ assing params }
+- user.Commit()
+- user.Delete()
+- dbContext.SelectAll<T>()
+- dbContext.DeleteAll<T>()
+
+###### Attribute list
+- [Table] - table name
+- [Field] - field name
+- [Key] - field name but used in key selection
+- [Default] - if value was not assigned then default value from db is assigned
+- [DefaultOverride] - if value was not assigned then value from attribute is used
+- [Nullable] - having null as value is not considered error
