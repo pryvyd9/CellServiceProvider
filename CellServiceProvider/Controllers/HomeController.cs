@@ -5,46 +5,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CellServiceProvider.Models;
-
-using Npgsql;
+using DbFramework;
 
 namespace CellServiceProvider.Controllers
 {
     public class HomeController : Controller
     {
-        private void TestConnection()
+        private void TestEntities()
         {
-            string connString = "Server=172.18.0.1;Port=11;Database=postgres;User Id=postgres;Password=admin;";
+            string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
 
+            DbContext dbContext = new DbContext(connString);
 
-
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                conn.Open();
-
-                Debug.WriteLine("CONNECTION SUCCESS");
-
-                using (var cmd = new NpgsqlCommand())
-                {
-                    cmd.Connection = conn;
-                    cmd.CommandText = "select * from my_table;";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            Debug.WriteLine(reader.GetString(1));
-                        }
-                    }
-                }
-            }
-
-
+            var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value[0] == 'p');
         }
 
 
         public IActionResult Index()
         {
-            TestConnection();
+            TestEntities();
 
             return View();
         }
