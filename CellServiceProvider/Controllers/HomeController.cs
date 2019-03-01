@@ -18,25 +18,7 @@ namespace CellServiceProvider.Controllers
 
             DbContext dbContext = new DbContext(connString);
 
-
-            //dbContext.DeleteAll<Service>();
-
-            //var service = new Service(dbContext)
-            //{
-            //    Name = "internet",
-            //};
-
-            //service.Commit();
-
-            //var userToService = new UserToService(dbContext)
-            //{
-            //    UserId = 5,
-            //    ServiceId = 1,
-            //};
-
-            //userToService.Commit();
-
-            //var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value[0] == 'p');
+            var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value?[0] == 'p');
         }
 
         private void TestConnection()
