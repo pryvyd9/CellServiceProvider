@@ -8,9 +8,9 @@
         }
 
         [Key("id")]
-        public long Id { get; set; }
+        public Db<int> Id { get; set; }
 
         [Field("name")]
-        public string Name { get; set; }
+        public Db<string> Name { get; set; }
     }
 }

@@ -48,11 +48,11 @@
         object IDbField.Value => Value;
         
 
-        public Db(T value = default)
+        public Db(T value)
         {
-            _isNotNull = false;
+            _isNotNull = true;
 
-            IsAssigned = false;
+            IsAssigned = true;
 
             _value = value;
         }

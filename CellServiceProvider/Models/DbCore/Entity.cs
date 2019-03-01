@@ -21,24 +21,24 @@ namespace CellServiceProvider.Models
 
         protected virtual void Initialize()
         {
-            // Add entity to dbcontext hashset.
+            //// Add entity to dbcontext hashset.
 
-            var property = context
-                .GetType()
-                .GetProperties()
-                .Single(n => n
-                    .PropertyType
-                    .GetGenericArguments()
-                    .Only(m => m == GetType()
-                ));
+            //var property = context
+            //    .GetType()
+            //    .GetProperties()
+            //    .Single(n => n
+            //        .PropertyType
+            //        .GetGenericArguments()
+            //        .Only(m => m == GetType()
+            //    ));
 
-            var addMethod = property
-                .PropertyType
-                .GetMethod("Add");
+            //var addMethod = property
+            //    .PropertyType
+            //    .GetMethod("Add");
 
-            var propVal = property.GetValue(context);
+            //var propVal = property.GetValue(context);
 
-            addMethod.Invoke(propVal, new[] { this });
+            //addMethod.Invoke(propVal, new[] { this });
         }
 
         //private List<(PropertyInfo, object)> GetValues(IEnumerable<PropertyInfo> properties)
@@ -130,7 +130,7 @@ namespace CellServiceProvider.Models
                             }
                             else
                             {
-                                throw new Exception("Non nullable field cannot have null as default value.");
+                                throw new Exception($"Non nullable field {TableName()}.{FieldName()} ({TableClassName()}.{PropertyName()}) cannot have null as default value.");
                             }
                         }
                         else
@@ -165,13 +165,15 @@ namespace CellServiceProvider.Models
                     }
                     else
                     {
-                        throw new Exception("Not nullable field was assigned with null.");
+                        throw new Exception($"Not nullable field {TableName()}.{FieldName()} ({TableClassName()}.{PropertyName()}) was assigned with null.");
                     }
                 }
                 else
                 {
                     Add(value.Value);
                 }
+
+                // Functions
 
                 bool Has<T>(out T attribute) => (attribute = attributes.OfType<T>().FirstOrDefault()) != null;
 
@@ -213,107 +215,62 @@ namespace CellServiceProvider.Models
                     .Only()
                 );
 
-
             var values = GetValues(properties);
-
-            //var values = properties.Select(n => (n, (IDbField)n.GetValue(this)))
-            //.Where(n =>
-            //{
-            //    var value = n.Item2;
-
-            //    var attrs = n.Item1.GetCustomAttributes(false);
-
-            //    if (!value.IsAssigned)
-            //    {
-            //        var defaultAttribute = attrs.OfType<DefaultAttribute>().FirstOrDefault();
-
-            //        if (defaultAttribute != null)
-            //        {
-            //            var nullableAttribute = attrs.OfType<NullableAttribute>().FirstOrDefault();
-
-            //            if (defaultAttribute.Value != null)
-            //            {
-            //                return true;
-            //            }
-            //            else if (nullableAttribute != null)
-            //            {
-
-            //            }
-            //        }
-
-            //        return false;
-            //    }
-
-            //    if (value.IsNull)
-            //    {
-            //        if (!attrs.OfType<NullableAttribute>().Any())
-            //        {
-            //            throw new Exception($"not nullable field {n.Item1.Name} was not assigned.");
-            //        }
-
-            //        return true;
-            //    }
-
-               
-
-            //    return true;
-            //})
-            //.Select(n =>
-            //{
-            //    var value = n.Item2;
-
-            //    var defaultAttribute = n.Item1.GetCustomAttributes(false).OfType<DefaultAttribute>().FirstOrDefault();
-
-            //    if (defaultAttribute != null)
-            //    {
-            //        if (defaultAttribute.Value != null)
-            //        {
-            //            return (n.Item1, defaultAttribute.Value);
-            //        }
-            //    }
-
-            //    return (n.Item1, value.Value);
-            //})
-            //.ToDictionary(n =>
-            //{
-            //    return n.Item1
-            //        .GetCustomAttributes(false)
-            //        .OfType<FieldAttribute>()
-            //        .Single()
-            //        .Name;
-            //}, n => n.Item2);
-
-
-            //values = values
-            //    .Where(n => n.Value != null ? Nullable.GetUnderlyingType(n.Value.GetType()) == null : false)
-            //    .ToDictionary(n => n.Key, n => n.Value);
 
             var keyNames = properties
                 .Where(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Any())
                 .Select(n => n.Name);
 
-            //var keyName = properties
-            //    .Single(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Count() == 1)
-            //    .Name;
-
             var builder = new StringBuilder()
                 .Append($"insert into \"{tableAttribute.Name}\" (")
                 .AppendJoin(",", values.Keys.Select(n => $"\"{n}\""))
                 .Append(") values (")
-                // Inject values
-                //.AppendJoin(",", values.Values.Select(n => n is string s ? $"'{s}'" : $"{n}"))
-                // Insert question marks
                 .AppendJoin(",", values.Keys.Select(n=>$"@{n}"))
                 .Append($") on conflict ({string.Join(",", keyNames)}) do update set ")
                 .AppendJoin(",", values.Keys.Select(n => $"{n} = excluded.{n}"));
 
 
+            // Prepare statement
+
+            context.Commit(CreateCommand(builder.ToString(), values));
+        }
+
+        public virtual void Delete()
+        {
+            // Create statement
+
+            var tableAttribute = GetType()
+                .GetCustomAttributes(false)
+                .OfType<TableAttribute>()
+                .Single();
+
+
+            var keys = GetType()
+                .GetProperties()
+                .Where(n => n
+                    .GetCustomAttributes(false)
+                    .OfType<KeyAttribute>()
+                    .Only()
+                );
+
+            var values = GetValues(keys);
+
+            var builder = new StringBuilder()
+                .Append($"delete from \"{tableAttribute.Name}\" where ")
+                .AppendJoin(" and ", values.Select(n => $"\"{n.Key}\" = @{n.Key}"));
+
 
             // Prepare statement
 
-            var command = new NpgsqlCommand()
+            context.Commit(CreateCommand(builder.ToString(), values));
+
+        }
+
+        private NpgsqlCommand CreateCommand(string commandString, Dictionary<string, object> values)
+        {
+            var command = new NpgsqlCommand
             {
-                CommandText = builder.ToString(),
+                CommandText = commandString,
             };
 
             var preparedParams = values
@@ -321,9 +278,7 @@ namespace CellServiceProvider.Models
 
             command.Parameters.AddRange(preparedParams);
 
-            context.Commit(command);
-            //context.Commit(builder.ToString());
-
+            return command;
         }
     }
 }

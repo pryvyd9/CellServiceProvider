@@ -24,6 +24,15 @@ namespace CellServiceProvider
             return ts.Count() == 1 && predicate(ts.Single());
         }
 
+        /// <summary>
+        /// Determines whether sequence contains exactly one element.
+        /// </summary>
+        public static bool No<T>(this IEnumerable<T> ts)
+        {
+
+            return ts.Count() == 0;
+        }
+
     }
 
 }

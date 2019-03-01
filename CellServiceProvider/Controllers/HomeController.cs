@@ -26,15 +26,15 @@ namespace CellServiceProvider.Controllers
             //userGroup.Commit();
 
 
-            var user = new User(dbContext)
-            {
-                NickName = "prizrak",
-                GroupId = 12,
-                //FullName = "Pavlo",
-                Password = "admin",
-            };
+            //var user = new User(dbContext)
+            //{
+            //    NickName = "prizrak",
+            //    GroupId = 12,
+            //    //FullName = "Pavlo",
+            //    Password = "admin",
+            //};
 
-            user.Commit();
+            //user.Commit();
 
             //var bill = new Bill(dbContext)
             //{
@@ -43,6 +43,8 @@ namespace CellServiceProvider.Controllers
             //};
 
             //bill.Commit();
+
+            var userGroups = dbContext.SelectAll<User>();
 
         }
 
