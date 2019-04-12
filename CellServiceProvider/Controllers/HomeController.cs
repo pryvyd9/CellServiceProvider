@@ -5,19 +5,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CellServiceProvider.Models;
-using DbFramework;
 
 namespace CellServiceProvider.Controllers
 {
+   
     public class HomeController : Controller
     {
         private void TestEntities()
         {
-            string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
+            string connString = "Server=127.0.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
+            //string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
 
-            DbContext dbContext = new DbContext(connString);
+            var dbContext = new ProviderContext(connString)
+            {
+                CommandFactory = new DbFramework.NpgsqlCommandFactory(),
+                ConnectionFactory = new DbFramework.NpgsqlConnectionFactory(),
+            };
 
-            var users = dbContext.SelectAll<User>().Where(n => n.NickName.Value[0] == 'p');
+            var users = dbContext.SelectAll<User>();
+            var users1 = users.Where(n => n.NickName.Value[0] == 'p');
+
+            //users.First().CommitWith(users.ElementAt(1)).Commit();
+            //users.First().CommitWith(users.ElementAt(1)).CommitWith("save1").RollBackWith<Exception>().Commit();
         }
 
 

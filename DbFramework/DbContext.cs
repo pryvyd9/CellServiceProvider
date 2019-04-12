@@ -3,22 +3,37 @@ using System.Threading.Tasks;
 using Npgsql;
 using System.Linq;
 using System;
+//using static DbFramework.Transact;
+using System.Data;
 
 namespace DbFramework
 {
+
+    public enum DataSourceType
+    {
+        Postgres,
+        SqlServer,
+    }
+
     public class DbContext
     {
-        private readonly string connString;
+        private readonly string _connString;
+
+        //private NpgsqlTransaction _transaction;
+
+        public CommandFactory CommandFactory;
+
+        public ConnectionFactory ConnectionFactory;
+
 
         public DbContext(string connString)
         {
-            this.connString = connString;
+            this._connString = connString;
         }
 
-
-        internal void Commit(NpgsqlCommand command)
+        internal void Commit(IDbCommand command)
         {
-            using (var conn = new NpgsqlConnection(connString))
+            using (var conn = ConnectionFactory.Create(_connString))
             {
                 conn.Open();
 
@@ -37,10 +52,9 @@ namespace DbFramework
                    .OfType<TableAttribute>()
                    .Single();
 
-            var command = new NpgsqlCommand
-            {
-                CommandText = $"select * from \"{tableAttribute.Name}\"",
-            };
+            var command = CommandFactory.Empty();
+
+            command.CommandText = $"select * from \"{tableAttribute.Name}\"";
 
             var entities = Select<T>(command);
 
@@ -65,13 +79,13 @@ namespace DbFramework
 
 
 
-        private ISet<T> Select<T>(NpgsqlCommand command) where T : Entity
+        private ISet<T> Select<T>(IDbCommand command) where T : Entity
         {
             HashSet<T> set = new HashSet<T>();
 
             var type = typeof(T);
 
-            using (var conn = new NpgsqlConnection(connString))
+            using (var conn = ConnectionFactory.Create(_connString))
             {
                 conn.Open();
 
@@ -94,7 +108,7 @@ namespace DbFramework
                             .GetConstructors()
                             .Single(n => n
                                 .GetParameters()
-                                .Only(m => m.ParameterType == GetType()))
+                                .Only(m => m.ParameterType.IsAssignableFrom(GetType())))
                             .Invoke(new[] { this });
 
                         for (int i = 0; i < reader.FieldCount; i++)
@@ -149,9 +163,9 @@ namespace DbFramework
             return set;
         }
 
-        private void Delete(NpgsqlCommand command)
+        private void Delete(IDbCommand command)
         {
-            using (var conn = new NpgsqlConnection(connString))
+            using (var conn = new NpgsqlConnection(_connString))
             {
                 conn.Open();
 
