@@ -8,18 +8,9 @@ using System.Data;
 
 namespace DbFramework
 {
-
-    public enum DataSourceType
-    {
-        Postgres,
-        SqlServer,
-    }
-
     public class DbContext
     {
         private readonly string _connString;
-
-        //private NpgsqlTransaction _transaction;
 
         public CommandFactory CommandFactory;
 

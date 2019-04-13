@@ -9,7 +9,7 @@ using CellServiceProvider.Models;
 namespace CellServiceProvider.Controllers
 {
    
-    public class HomeController : Controller
+    public class DbClientController : Controller
     {
         private void TestEntities()
         {
