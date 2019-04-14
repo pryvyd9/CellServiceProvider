@@ -9,7 +9,9 @@ namespace WebClient.Models
 {
     public class EntityTableAdapter
     {
-        public List<Entity> Entities { get; set; }
+        public Entity[] Entities { get; set; }
+
+        public string Header { get; private set; }
 
         public string Table { get; private set; }
 
@@ -35,11 +37,6 @@ namespace WebClient.Models
                 {
                     builder.Append(GetCell(string.Empty));
                 }
-
-                //else if (field.IsNullable)
-                //{
-                //    builder.Append(GetCell(string.Empty));
-                //}
             }
 
             var row = $"<div class=\"db-row\">{builder.ToString()}</div>";
@@ -50,10 +47,7 @@ namespace WebClient.Models
         public void CreateTable()
         {
             if (!Entities.Any())
-            {
                 return;
-            }
-
 
             var fields = Entities[0].GetFieldTypes();
 
@@ -64,6 +58,11 @@ namespace WebClient.Models
                 rows.Add(GetRow(fields, entity));
             }
 
+            var content = string.Join("", rows);
+
+            var table = $"<div class=\"db-table\">{content}</div>";
+
+            Table = table;
         }
     }
 }

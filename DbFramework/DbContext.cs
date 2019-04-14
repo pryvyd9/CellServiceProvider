@@ -23,16 +23,50 @@ namespace DbFramework
             this._connString = connString;
         }
 
-        internal void Commit(IDbCommand command)
+        //internal void Commit(IDbCommand command)
+        //{
+        //    using (var conn = ConnectionFactory.Create(_connString))
+        //    {
+        //        conn.Open();
+
+        //        command.Connection = conn;
+        //        command.Prepare();
+        //        command.ExecuteNonQuery();
+        //    }
+        //}
+
+        internal IEnumerable<IDictionary<string, object>> Commit(IDbCommand command)
         {
+            var rows = new List<Dictionary<string, object>>();
+
             using (var conn = ConnectionFactory.Create(_connString))
             {
                 conn.Open();
 
                 command.Connection = conn;
                 command.Prepare();
-                command.ExecuteNonQuery();
+
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var row = new Dictionary<string, object>();
+
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            var fieldName = reader.GetName(i);
+                            var fieldValue = reader.GetValue(i);
+
+                            row[fieldName] = fieldValue;
+                        }
+
+                        rows.Add(row);
+                    }
+                }
             }
+
+            return rows;
         }
 
 

@@ -84,8 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataParameterCollectionFake.cs" />
-    <Compile Include="DbContextTest.cs" />
+    <Compile Include="DbIntegrationTest.cs" />
     <Compile Include="DbTest.cs" />
+    <Compile Include="EntityTest.cs" />
     <Compile Include="Extentions.cs" />
     <Compile Include="NpqlCommandFactoryFake.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

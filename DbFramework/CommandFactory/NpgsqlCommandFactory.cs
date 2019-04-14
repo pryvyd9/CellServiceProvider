@@ -49,7 +49,8 @@ namespace DbFramework
                     .Append($" on conflict (")
                     .AppendJoin(",", keyNames.Select(n => $"\"{n}\""))
                     .Append(") do update set ")
-                    .AppendJoin(",", nonKeyNames.Select(n => $"\"{n}\" = excluded.\"{n}\""));
+                    .AppendJoin(",", nonKeyNames.Select(n => $"\"{n}\" = excluded.\"{n}\""))
+                    .Append("returning *");
             }
 
             return CreateCommand(builder.ToString(), values);
@@ -71,7 +72,8 @@ namespace DbFramework
 
             var builder = new StringBuilder()
                 .Append($"delete from \"{tableAttribute.Name}\" where ")
-                .AppendJoin(" and ", values.Select(n => $"\"{n.Key}\" = @{n.Key}"));
+                .AppendJoin(" and ", values.Select(n => $"\"{n.Key}\" = @{n.Key}"))
+                .Append("returning *");
 
 
             // Prepare statement

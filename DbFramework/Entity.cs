@@ -7,20 +7,6 @@ using System.Reflection;
 
 namespace DbFramework
 {
-    public struct FieldInfo
-    {
-        public readonly string Name;
-        public readonly bool IsNullable;
-        public readonly Type Type;
-
-        public FieldInfo(string name, bool isNullable, Type type)
-        {
-            Name = name;
-            IsNullable = isNullable;
-            Type = type;
-        }
-    }
-
     public abstract class Entity
     {
         internal DbContext Context { get; }
@@ -29,24 +15,6 @@ namespace DbFramework
         {
             Context = context;
         }
-
-        //public IDictionary<string, Type> GetFieldTypes()
-        //{
-        //    var properties = GetType()
-        //       .GetProperties()
-        //       .Where(n => n
-        //           .GetCustomAttributes(false)
-        //           .OfType<FieldAttribute>()
-        //           .Only()
-        //       ).ToDictionary(n => n
-        //           .GetCustomAttributes(false)
-        //           .OfType<FieldAttribute>()
-        //           .Single()
-        //           .Name, n => n.PropertyType
-        //       );
-
-        //    return properties;
-        //}
 
         public FieldInfo[] GetFieldTypes()
         {
@@ -60,7 +28,7 @@ namespace DbFramework
                        .Name;
 
                    var isNullable = n
-                       .IsDefined(typeof(NullableAttribute));
+                       .IsDefined<NullableAttribute>();
 
                    var type = n.PropertyType;
 
@@ -169,7 +137,36 @@ namespace DbFramework
 
         public virtual void Commit()
         {
-            Context.Commit(Context.CommandFactory.Commit(this));
+            var result = Context.Commit(Context.CommandFactory.Commit(this));
+
+            // Fill not assigned fields with values retrieved from database.
+
+            var row = result.First();
+
+            var props = GetType().GetProperties();
+
+            foreach (var field in row)
+            {
+                var prop = props
+                    .Where(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key)
+                    .Single();
+
+                var propValue = prop.GetValue(this);
+
+                var isAssigned = (bool)propValue
+                    .GetType()
+                    .GetProperty("IsAssigned")
+                    .GetValue(propValue);
+
+                if (!isAssigned)
+                {
+                    var constructor = prop.PropertyType.GetConstructor(new[] { field.Value.GetType() });
+
+                    var newValue = constructor.Invoke(new[] { field.Value });
+
+                    prop.SetValue(this, newValue);
+                }
+            }
         }
 
         public virtual void Delete()
