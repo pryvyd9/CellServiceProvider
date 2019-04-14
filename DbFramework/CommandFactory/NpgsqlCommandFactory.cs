@@ -25,15 +25,15 @@ namespace DbFramework
             var values = entity.GetValues(properties);
 
             var keys = properties
-                .Where(n => n.GetCustomAttributes<KeyAttribute>(false).Any())
+                .Where(n => n.IsDefined<KeyAttribute>())
                 .ToArray();
 
             var keyNames = keys
-                .Select(n => n.GetCustomAttributes<KeyAttribute>(false).Single().Name);
+                .Select(n => n.GetCustomAttribute<KeyAttribute>(false).Name);
 
             var nonKeyNames = properties
                 .Except(keys)
-                .Select(n => n.GetCustomAttributes<FieldAttribute>(false).Single().Name)
+                .Select(n => n.GetCustomAttribute<FieldAttribute>(false).Name)
                 .ToArray();
 
             var builder = new StringBuilder()
