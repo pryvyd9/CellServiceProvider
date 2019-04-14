@@ -23,17 +23,6 @@ namespace DbFramework
             this._connString = connString;
         }
 
-        //internal void Commit(IDbCommand command)
-        //{
-        //    using (var conn = ConnectionFactory.Create(_connString))
-        //    {
-        //        conn.Open();
-
-        //        command.Connection = conn;
-        //        command.Prepare();
-        //        command.ExecuteNonQuery();
-        //    }
-        //}
 
         internal IEnumerable<IDictionary<string, object>> Commit(IDbCommand command)
         {

@@ -2,8 +2,9 @@
     ViewData["Title"] = "Users";
 }
 
+@model WebClient.Models.EntityTableAdapter
+
 <h3>Users</h3>
 
-<div class="db-table">
-	
-</div>
+@Html.Raw(Model.Table)
+
