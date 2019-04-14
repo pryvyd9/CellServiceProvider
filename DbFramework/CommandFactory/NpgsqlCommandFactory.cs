@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using System.Data;
 using System.Text;
+using System.Reflection;
 
 namespace DbFramework
 {
@@ -14,15 +15,12 @@ namespace DbFramework
             // Create statement
 
             var tableAttribute = entity.GetType()
-                .GetCustomAttributes(false)
-                .OfType<TableAttribute>()
-                .Single();
+                .GetCustomAttribute<TableAttribute>(false);
 
             var properties = entity.GetType()
                 .GetProperties()
                 .Where(n => n
-                    .GetCustomAttributes(false)
-                    .OfType<FieldAttribute>()
+                    .GetCustomAttributes<FieldAttribute>(false)
                     .Only()
                 )
                 .ToArray();
@@ -30,15 +28,15 @@ namespace DbFramework
             var values = entity.GetValues(properties);
 
             var keys = properties
-                .Where(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Any())
+                .Where(n => n.GetCustomAttributes<KeyAttribute>(false).Any())
                 .ToArray();
 
             var keyNames = keys
-                .Select(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Single().Name);
+                .Select(n => n.GetCustomAttributes<KeyAttribute>(false).Single().Name);
 
             var nonKeyNames = properties
                 .Except(keys)
-                .Select(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Single().Name)
+                .Select(n => n.GetCustomAttributes<FieldAttribute>(false).Single().Name)
                 .ToArray();
 
             var builder = new StringBuilder()
@@ -65,16 +63,13 @@ namespace DbFramework
             // Create statement
 
             var tableAttribute = entity.GetType()
-                .GetCustomAttributes(false)
-                .OfType<TableAttribute>()
-                .Single();
+                .GetCustomAttribute<TableAttribute>(false);
 
 
             var keys = entity.GetType()
                 .GetProperties()
                 .Where(n => n
-                    .GetCustomAttributes(false)
-                    .OfType<KeyAttribute>()
+                    .GetCustomAttributes<KeyAttribute>(false)
                     .Only()
                 );
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 //using static DbFramework.Transact;
 using System.Data;
+using System.Reflection;
 
 namespace DbFramework
 {
@@ -89,8 +90,8 @@ namespace DbFramework
 
                     var properties = type
                         .GetProperties()
-                        .Where(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Only())
-                        .ToDictionary(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Single().Name, n => n);
+                        .Where(n => n.GetCustomAttributes<FieldAttribute>(false).Only())
+                        .ToDictionary(n => n.GetCustomAttribute<FieldAttribute>(false).Name, n => n);
                     
 
                     while (reader.Read())

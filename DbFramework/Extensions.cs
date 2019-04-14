@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
+using System.Reflection;
 
 namespace DbFramework
 {
@@ -24,18 +25,17 @@ namespace DbFramework
             return ts.Count() == 1 && predicate(ts.Single());
         }
 
-        ///// <summary>
-        ///// Determines whether sequence contains exactly one element.
-        ///// </summary>
-        //internal static bool None<T>(this IEnumerable<T> ts)
-        //{
-        //    return !ts.Any();
-        //}
+     
         internal static StringBuilder AppendJoin(this StringBuilder builder, string delimiter, IEnumerable<object> collection)
         {
             return builder.Append(string.Join(delimiter, collection));
         }
 
+        //internal static IEnumerable<T> GetAttibutes<T>(this PropertyInfo prop)
+        //    where T : Attribute
+        //{
+        //    prop.GetCustomAttribut
+        //}
     }
 
 }

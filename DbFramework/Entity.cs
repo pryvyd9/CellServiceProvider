@@ -7,6 +7,20 @@ using System.Reflection;
 
 namespace DbFramework
 {
+    public struct FieldInfo
+    {
+        public readonly string Name;
+        public readonly bool IsNullable;
+        public readonly Type Type;
+
+        public FieldInfo(string name, bool isNullable, Type type)
+        {
+            Name = name;
+            IsNullable = isNullable;
+            Type = type;
+        }
+    }
+
     public abstract class Entity
     {
         internal DbContext Context { get; }
@@ -16,31 +30,58 @@ namespace DbFramework
             Context = context;
         }
 
-        public IDictionary<string, Type> GetFieldTypes()
+        //public IDictionary<string, Type> GetFieldTypes()
+        //{
+        //    var properties = GetType()
+        //       .GetProperties()
+        //       .Where(n => n
+        //           .GetCustomAttributes(false)
+        //           .OfType<FieldAttribute>()
+        //           .Only()
+        //       ).ToDictionary(n => n
+        //           .GetCustomAttributes(false)
+        //           .OfType<FieldAttribute>()
+        //           .Single()
+        //           .Name, n => n.PropertyType
+        //       );
+
+        //    return properties;
+        //}
+
+        public FieldInfo[] GetFieldTypes()
         {
             var properties = GetType()
                .GetProperties()
                .Where(n => n
-                   .GetCustomAttributes(false)
-                   .OfType<FieldAttribute>()
+                   .GetCustomAttributes<FieldAttribute>(false)
                    .Only()
-               ).ToDictionary(n => n
-                   .GetCustomAttributes(false)
-                   .OfType<FieldAttribute>()
-                   .Single()
-                   .Name, n => n.PropertyType
-               );
+               ).Select(n =>
+               {
+                   var name = n
+                       .GetCustomAttribute<FieldAttribute>(false)
+                       .Name;
+
+                   var isNullable = n
+                       .GetCustomAttributes<NullableAttribute>(false)
+                       .SingleOrDefault() != null;
+
+                   var type = n.PropertyType;
+
+                   var field = new FieldInfo(name, isNullable, type);
+
+                   return field;
+               }).ToArray();
+               
 
             return properties;
         }
 
-        public IDictionary<string, object> GetValues()
+        public IDictionary<string, object> GetFieldValues()
         {
             var properties = GetType()
                  .GetProperties()
                  .Where(n => n
-                     .GetCustomAttributes(false)
-                     .OfType<FieldAttribute>()
+                     .GetCustomAttributes<FieldAttribute>(false)
                      .Only()
                  );
 
@@ -125,7 +166,7 @@ namespace DbFramework
 
                 string TableClassName() => property.DeclaringType?.FullName;
 
-                string TableName() => property.DeclaringType?.GetCustomAttributes(false).OfType<TableAttribute>().Single().Name;
+                string TableName() => property.DeclaringType?.GetCustomAttribute<TableAttribute>(false).Name;
             }
 
             return values;
