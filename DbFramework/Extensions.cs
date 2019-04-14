@@ -36,6 +36,31 @@ namespace DbFramework
         //{
         //    prop.GetCustomAttribut
         //}
+
+        /// <summary>
+        /// Checks if property has attribute of specified type.
+        /// </summary>
+        /// <typeparam name="T">Type of attribute.</typeparam>
+        /// <param name="prop">Property to check.</param>
+        /// <returns>Whether property has attribute.</returns>
+        internal static bool IsDefined<T>(this PropertyInfo prop)
+            where T : Attribute
+        {
+            return prop.IsDefined(typeof(T));
+        }
+
+        /// <summary>
+        /// Checks if property has exactly one instance of 
+        /// attribute of specified type.
+        /// </summary>
+        /// <typeparam name="T">Type of attribute.</typeparam>
+        /// <param name="prop">Property to check.</param>
+        /// <returns>Whether property has exactly one instance of attribute.</returns>
+        internal static bool IsOnly<T>(this PropertyInfo prop)
+            where T : Attribute
+        {
+            return prop.GetCustomAttributes<T>(false).Only();
+        }
     }
 
 }

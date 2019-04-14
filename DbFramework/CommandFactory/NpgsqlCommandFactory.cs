@@ -19,10 +19,7 @@ namespace DbFramework
 
             var properties = entity.GetType()
                 .GetProperties()
-                .Where(n => n
-                    .GetCustomAttributes<FieldAttribute>(false)
-                    .Only()
-                )
+                .Where(n => n.IsOnly<FieldAttribute>())
                 .ToArray();
 
             var values = entity.GetValues(properties);
@@ -68,10 +65,7 @@ namespace DbFramework
 
             var keys = entity.GetType()
                 .GetProperties()
-                .Where(n => n
-                    .GetCustomAttributes<KeyAttribute>(false)
-                    .Only()
-                );
+                .Where(n => n.IsOnly<KeyAttribute>());
 
             var values = entity.GetValues(keys);
 

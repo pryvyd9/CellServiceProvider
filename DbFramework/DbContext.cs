@@ -90,7 +90,7 @@ namespace DbFramework
 
                     var properties = type
                         .GetProperties()
-                        .Where(n => n.GetCustomAttributes<FieldAttribute>(false).Only())
+                        .Where(n => n.IsOnly<FieldAttribute>())
                         .ToDictionary(n => n.GetCustomAttribute<FieldAttribute>(false).Name, n => n);
                     
 

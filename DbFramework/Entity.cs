@@ -52,18 +52,15 @@ namespace DbFramework
         {
             var properties = GetType()
                .GetProperties()
-               .Where(n => n
-                   .GetCustomAttributes<FieldAttribute>(false)
-                   .Only()
-               ).Select(n =>
+               .Where(n => n.IsOnly<FieldAttribute>())
+               .Select(n =>
                {
                    var name = n
                        .GetCustomAttribute<FieldAttribute>(false)
                        .Name;
 
                    var isNullable = n
-                       .GetCustomAttributes<NullableAttribute>(false)
-                       .SingleOrDefault() != null;
+                       .IsDefined(typeof(NullableAttribute));
 
                    var type = n.PropertyType;
 
@@ -80,10 +77,7 @@ namespace DbFramework
         {
             var properties = GetType()
                  .GetProperties()
-                 .Where(n => n
-                     .GetCustomAttributes<FieldAttribute>(false)
-                     .Only()
-                 );
+                 .Where(n => n.IsOnly<FieldAttribute>());
 
             return GetValues(properties);
         }
