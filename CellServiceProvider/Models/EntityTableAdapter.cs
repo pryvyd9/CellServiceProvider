@@ -49,7 +49,7 @@ namespace WebClient.Models
             if (!Entities.Any())
                 return;
 
-            var fields = Entities[0].GetFieldTypes();
+            var fields = Entities[0].GetFieldInfos();
 
             var rows = new List<string>();
 

@@ -47,7 +47,7 @@ namespace DbFrameworkTest
                 new FieldInfo("password",   false,  typeof(Db<string>)),
             };
 
-            var result = user.GetFieldTypes();
+            var result = user.GetFieldInfos();
 
             CollectionAssert.AreEquivalent(expected, result);
         }

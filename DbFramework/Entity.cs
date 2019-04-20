@@ -16,7 +16,7 @@ namespace DbFramework
             Context = context;
         }
 
-        public FieldInfo[] GetFieldTypes()
+        public FieldInfo[] GetFieldInfos()
         {
             var properties = GetType()
                .GetProperties()
