@@ -73,5 +73,10 @@
             };
         }
 
+        public override string ToString()
+        {
+            return IsNull ? string.Empty : Value.ToString();
+        }
+
     }
 }

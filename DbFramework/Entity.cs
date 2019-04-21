@@ -16,6 +16,16 @@ namespace DbFramework
             Context = context;
         }
 
+        public void InitializeWith(IDictionary<string, object> fields)
+        {
+            var props = GetType().GetProperties();
+
+            foreach (var field in fields)
+            {
+                props.First(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key).SetValue(this, field.Value);
+            }
+        }
+
         public FieldInfo[] GetFieldInfos()
         {
             var properties = GetType()

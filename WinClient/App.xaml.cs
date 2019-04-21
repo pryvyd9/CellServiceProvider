@@ -13,5 +13,11 @@ namespace WinClient
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            var mainWindow = new MainWindow();
+
+            mainWindow.Show();
+        }
     }
 }

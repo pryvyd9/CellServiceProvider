@@ -69,6 +69,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\Bill.cs" />
+    <Compile Include="Models\EntityTableAdapter.cs" />
+    <Compile Include="Models\ErrorViewModel.cs" />
+    <Compile Include="Models\ProviderContext.cs" />
+    <Compile Include="Models\Service.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserGroup.cs" />
+    <Compile Include="Models\UserToService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -93,6 +101,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbFramework\DbFramework.csproj">
+      <Project>{149dfdc7-80b0-4507-ae44-2e12870eb5a3}</Project>
+      <Name>DbFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DbWpfControls\DbWpfControls.csproj">
+      <Project>{50cd0190-81a3-4d66-bdf7-2dd42054c535}</Project>
+      <Name>DbWpfControls</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
