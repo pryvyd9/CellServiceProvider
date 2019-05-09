@@ -52,14 +52,22 @@ namespace CellServiceProvider
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapApplication();
-                routes.MapControllerRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+            //app.UseRouting(routes =>
+            //{
+            //    routes.MapApplication();
+            //    routes.MapControllerRoute(
+            //        name: "default",
+            //        template: "{controller=Home}/{action=Index}/{id?}");
+            //});
+            app.UseRouting();
 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+                //endpoints.MapHub<MyChatHub>()
+                //endpoints.MapGrpcService<MyCalculatorService>();
+            });
             app.UseCookiePolicy();
 
             app.UseAuthorization();

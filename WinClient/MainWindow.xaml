@@ -8,6 +8,24 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <!--<ScrollViewer>
+            <StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="22"/>
+                        <RowDefinition Height="22"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Button Height="22" Grid.Row="0"/>
+                    <Button Height="22" Grid.Row="1"/>
+
+
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>-->
         <db:Table Name="dbGrid"/>
     </Grid>
 </Window>
