@@ -4,7 +4,8 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using DbFramework;
 using System.Linq;
-
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace DbWpfControls
 {
@@ -35,22 +36,23 @@ namespace DbWpfControls
         }
     }
 
-    public class Table : DockPanel
+    public class Table : Grid
     {
         (ColumnDefinition content, ColumnDefinition splitter)[] columnDefinitions;
+        (ColumnDefinition content, ColumnDefinition splitter)[] contentColumnDefinitions;
 
-        List<RowDefinition> rowDefinitions;
+        readonly List<RowDefinition> rowDefinitions = new List<RowDefinition>();
 
-        List<Entity> showedEntities;
+        readonly List<Entity> showedEntities = new List<Entity>();
 
         public Func<IEnumerable<Entity>> ItemSelector { get; set; }
 
+        public double RowHeight = 24;
+        public double SplitterWidth = 5;
 
         #region parts
 
         readonly ScrollViewer scrollViewer;
-
-        readonly StackPanel stackPanel;
 
         readonly Grid contentGrid;
 
@@ -58,41 +60,89 @@ namespace DbWpfControls
 
         Header[] headers { get; set; }
 
-        List<Cell[]> rows { get; set; }
+        readonly List<Cell[]> rows = new List<Cell[]>();
 
         #endregion
 
 
         public Table()
         {
-            scrollViewer = new ScrollViewer();
-            stackPanel = new StackPanel();
             contentGrid = new Grid();
 
-            scrollViewer.Content = stackPanel;
+            headerGrid = new Grid
+            {
+                Background = Brushes.Red,
+                Margin = new Thickness(0, 0, SystemParameters.VerticalScrollBarWidth, 0)
+            };
+            headerGrid.SetValue(RowProperty, 0);
 
-            scrollViewer.SetValue(DockProperty, Dock.Bottom);
+            scrollViewer = new ScrollViewer
+            {
+                Content = contentGrid,
+                Background = Brushes.Blue
+            };
+            scrollViewer.SetValue(RowProperty, 1);
 
-            headerGrid = new Grid();
 
-            headerGrid.SetValue(DockProperty, Dock.Top);
+            var rowTop = new RowDefinition
+            {
+                Height = new GridLength(RowHeight)
+            };
+            var rowBottom = new RowDefinition();
 
+            RowDefinitions.Add(rowTop);
+            RowDefinitions.Add(rowBottom);
 
-            //stackPanel.Children.A
-            //stackPanel.Children.A
+            Children.Add(scrollViewer);
+            Children.Add(headerGrid);
+
+        }
+
+        void CreateHeaders(FieldInfo[] infos)
+        {
+            headers = infos.Select(n => new Header(n.Name)).ToArray();
+
+            headers.Select((n, i) =>
+            {
+                n.SetCurrentValue(ColumnProperty, i * 2);
+                return n;
+            }).ToList()
+            .ForEach(n =>
+            {
+                headerGrid.Children.Add(n);
+            });
+
         }
 
         void CreateColumns(Entity entity)
         {
             var infos = entity.GetFieldInfos();
 
-            headers = infos.Select(n => new Header(n.Name)).ToArray();
-
-            columnDefinitions = infos.Select(n =>
+            columnDefinitions = infos.Select((n,i) =>
             {
                 var contentCol = new ColumnDefinition();
-                var splitterCol = new ColumnDefinition();
+                var splitterCol = new ColumnDefinition
+                {
+                    Width = new GridLength()
+                };
                 // Create Splitter
+
+                GridSplitter createSplitter()
+                {
+                    var splitter = new GridSplitter
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        Width = SplitterWidth,
+                        Background = Brushes.Yellow
+                    };
+                    splitter.SetCurrentValue(ColumnProperty, i * 2 + 1);
+                    splitter.SetCurrentValue(RowSpanProperty, 200000);
+                    return splitter;
+                }
+
+                contentGrid.Children.Add(createSplitter());
+                headerGrid.Children.Add(createSplitter());
+                
 
                 return (contentCol, splitterCol);
             }).ToArray();
@@ -102,9 +152,35 @@ namespace DbWpfControls
                 headerGrid.ColumnDefinitions.Add(content);
                 headerGrid.ColumnDefinitions.Add(splitter);
 
-                contentGrid.ColumnDefinitions.Add(content);
-                contentGrid.ColumnDefinitions.Add(splitter);
+                var contentContentCol = new ColumnDefinition();
+                {
+                    var binding = new Binding
+                    {
+                        Source = content,
+                        Path = new PropertyPath("Width"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                    };
+                    BindingOperations.SetBinding(contentContentCol, ColumnDefinition.WidthProperty, binding);
+                }
+                var contentSplitterCol = new ColumnDefinition();
+                {
+                    var binding = new Binding
+                    {
+                        Source = splitter,
+                        Path = new PropertyPath("Width"),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                    };
+                    BindingOperations.SetBinding(contentSplitterCol, ColumnDefinition.WidthProperty, binding);
+                }
+
+                contentGrid.ColumnDefinitions.Add(contentContentCol);
+                contentGrid.ColumnDefinitions.Add(contentSplitterCol);
+
             }
+
+            CreateHeaders(infos);
         }
 
         public void Refresh()
@@ -120,26 +196,35 @@ namespace DbWpfControls
 
 
             var rowDefinition = new RowDefinition();
+            rowDefinition.Height = new GridLength(RowHeight);
+
             rowDefinitions.Add(rowDefinition);
+            contentGrid.RowDefinitions.Add(rowDefinition);
 
             var rowIndex = rows.Count;
 
 
-            var cells = values.Select((value, columnIndex) =>
+            var cells = values.Select((value, cl) =>
             {
+                var columnIndex = cl * 2;
                 var cell = new Cell(columnIndex, rowIndex, this)
                 {
                     Text = value.Value.ToString(),
                 };
 
-                cell.SetValue(Grid.RowProperty, rowDefinition);
-                cell.SetValue(Grid.ColumnProperty, columnDefinitions[columnIndex].content);
+                cell.SetValue(Grid.RowProperty, rowIndex);
+                cell.SetValue(Grid.ColumnProperty, columnIndex);
 
                 return cell;
             }).ToArray();
 
             rows.Add(cells);
             showedEntities.Add(entity);
+
+            foreach (var cell in cells)
+            {
+                contentGrid.Children.Add(cell);
+            }
         }
 
 
