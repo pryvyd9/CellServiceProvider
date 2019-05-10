@@ -61,6 +61,8 @@ namespace DbFramework
         {
             return prop.GetCustomAttributes<T>(false).Only();
         }
+
+        //internal static bool IsEquivalent<K,V>(this IReadOnlyDictionary<K,V> dict1, IReadOnlyDictionary<K, V> dict2)
     }
 
 }

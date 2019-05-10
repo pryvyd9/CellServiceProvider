@@ -78,5 +78,32 @@
             return IsNull ? string.Empty : Value.ToString();
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Db<T> db)
+            {
+                return db.Value.Equals(Value) && IsAssigned.Equals(db.IsAssigned) && IsNull.Equals(db.IsNull);
+            }
+            else if (obj is T t)
+            {
+                return Value.Equals(t) && _isNotNull;
+            }
+
+            return false;
+
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode() + IsAssigned.GetHashCode() + IsNull.GetHashCode();
+        }
+
+        //public static bool operator ==(Db<T> ob1, Db<T> ob2)
+        //{
+        //    return ob1.Value.Equals(ob2.Value);
+        //}
+        //public static bool operator !=(Db<T> ob1, Db<T> ob2)
+        //{
+        //    return !(ob1 == ob2);
+        //}
     }
 }

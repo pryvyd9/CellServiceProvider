@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="DbWpfControls.TableControl.TableControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DbWpfControls.TableControl"
+             xmlns:control="clr-namespace:DbWpfControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="377*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="refreshButton" Click="RefreshButton_Click" Content="Refresh" />
+            <Button x:Name="commitButton" Click="CommitButton_Click" Content="Commit" />
+        </StackPanel>
+
+        <local:InsertBox x:Name="insertBox" Grid.Row="1"/>
+
+        <control:Table x:Name="table" Grid.Row="2"/>
+    </Grid>
+</UserControl>

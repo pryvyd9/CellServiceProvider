@@ -22,7 +22,6 @@ namespace WinClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        public DbWpfControls.Table DbTable => dbGrid;
 
         public MainWindow()
         {

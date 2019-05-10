@@ -6,40 +6,16 @@ using DbFramework;
 using System.Linq;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Controls.Primitives;
 
 namespace DbWpfControls
 {
-    class UpdateInfo
-    {
-        public Exception Exception { get; internal set; }
-    }
 
-    class Cell : TextBox
-    {
-        readonly int column;
-        readonly int row;
-        readonly Table table;
-
-        public Cell(int column, int row, Table table)
-        {
-            this.column = column;
-            this.row = row;
-            this.table = table;
-        }
-    }
-
-    class Header : Label
-    {
-        public Header(string name)
-        {
-            Content = name;
-        }
-    }
+    public delegate void CellModifiedEventHandler(object sender, CellModifiedEventArgs e);
 
     public class Table : Grid
     {
         (ColumnDefinition content, ColumnDefinition splitter)[] columnDefinitions;
-        (ColumnDefinition content, ColumnDefinition splitter)[] contentColumnDefinitions;
 
         readonly List<RowDefinition> rowDefinitions = new List<RowDefinition>();
 
@@ -47,16 +23,25 @@ namespace DbWpfControls
 
         public Func<IEnumerable<Entity>> ItemSelector { get; set; }
 
+        public event CellModifiedEventHandler CellModified;
+
         public double RowHeight = 24;
+        public double ColWidth = 150;
         public double SplitterWidth = 5;
+
+        private bool isSplitterBeingDragged = false;
+        private bool isCellBeingModified = false;
+
+        public int Offset = 0;
+        public int Count = 1000;
 
         #region parts
 
-        readonly ScrollViewer scrollViewer;
-
-        readonly Grid contentGrid;
+        readonly ScrollViewer headerScrollViewer;
+        readonly ScrollViewer contentScrollViewer;
 
         readonly Grid headerGrid;
+        readonly Grid contentGrid;
 
         Header[] headers { get; set; }
 
@@ -65,23 +50,37 @@ namespace DbWpfControls
         #endregion
 
 
+
+
         public Table()
         {
+
+            headerGrid = new Grid();
+
+            headerScrollViewer = new ScrollViewer
+            {
+                Content = headerGrid,
+                Background = Brushes.Red,
+                Margin = new Thickness(0, 0, SystemParameters.VerticalScrollBarWidth, 0),
+                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+            };
+            headerScrollViewer.SetValue(RowProperty, 0);
+            headerScrollViewer.ScrollChanged += Table_ScrollChanged;
+
+
+
             contentGrid = new Grid();
 
-            headerGrid = new Grid
-            {
-                Background = Brushes.Red,
-                Margin = new Thickness(0, 0, SystemParameters.VerticalScrollBarWidth, 0)
-            };
-            headerGrid.SetValue(RowProperty, 0);
-
-            scrollViewer = new ScrollViewer
+            contentScrollViewer = new ScrollViewer
             {
                 Content = contentGrid,
-                Background = Brushes.Blue
+                Background = Brushes.Blue,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
             };
-            scrollViewer.SetValue(RowProperty, 1);
+            contentScrollViewer.SetValue(RowProperty, 1);
+            contentScrollViewer.ScrollChanged += Table_ScrollChanged;
+
 
 
             var rowTop = new RowDefinition
@@ -93,12 +92,29 @@ namespace DbWpfControls
             RowDefinitions.Add(rowTop);
             RowDefinitions.Add(rowBottom);
 
-            Children.Add(scrollViewer);
-            Children.Add(headerGrid);
-
+            Children.Add(headerScrollViewer);
+            Children.Add(contentScrollViewer);
         }
 
-        void CreateHeaders(FieldInfo[] infos)
+
+        private void SetScrollOffset(double offset)
+        {
+            headerScrollViewer.ScrollToHorizontalOffset(offset);
+            contentScrollViewer.ScrollToHorizontalOffset(offset);
+        }
+
+        private void Table_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (isSplitterBeingDragged || isCellBeingModified)
+            {
+                return;
+            }
+
+            SetScrollOffset(e.HorizontalOffset);
+        }
+      
+
+        private void CreateHeaders(FieldInfo[] infos)
         {
             headers = infos.Select(n => new Header(n.Name)).ToArray();
 
@@ -114,29 +130,38 @@ namespace DbWpfControls
 
         }
 
-        void CreateColumns(Entity entity)
+        private void CreateColumns(Entity entity)
         {
             var infos = entity.GetFieldInfos();
 
             columnDefinitions = infos.Select((n,i) =>
             {
-                var contentCol = new ColumnDefinition();
+                var contentCol = new ColumnDefinition
+                {
+                    Width = new GridLength(ColWidth)
+                };
                 var splitterCol = new ColumnDefinition
                 {
                     Width = new GridLength()
                 };
-                // Create Splitter
 
+                // Create Splitters
                 GridSplitter createSplitter()
                 {
                     var splitter = new GridSplitter
                     {
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        HorizontalAlignment = HorizontalAlignment.Left,
                         Width = SplitterWidth,
                         Background = Brushes.Yellow
                     };
+
+                    // Each second column.
                     splitter.SetCurrentValue(ColumnProperty, i * 2 + 1);
                     splitter.SetCurrentValue(RowSpanProperty, 200000);
+
+                    splitter.DragStarted += (s, e) => isSplitterBeingDragged = true;
+                    splitter.DragCompleted += (s, e) => isSplitterBeingDragged = false;
+
                     return splitter;
                 }
 
@@ -183,17 +208,23 @@ namespace DbWpfControls
             CreateHeaders(infos);
         }
 
-        public void Refresh()
-        {
 
+
+        private void DeleteRows()
+        {
+            rows
+                .SelectMany(n => n)
+                .ToList()
+                .ForEach(n => contentGrid.Children.Remove(n));
+
+            rowDefinitions.Clear();
+            rows.Clear();
+            contentGrid.RowDefinitions.Clear();
         }
 
-        public void CreateRow(Entity entity)
+        private void CreateRow(Entity entity)
         {
-
-            //var infos = entity.GetFieldInfos();
-            var values = entity.GetFieldValues();
-
+            var values = entity.GetFieldValues(true);
 
             var rowDefinition = new RowDefinition();
             rowDefinition.Height = new GridLength(RowHeight);
@@ -207,14 +238,13 @@ namespace DbWpfControls
             var cells = values.Select((value, cl) =>
             {
                 var columnIndex = cl * 2;
-                var cell = new Cell(columnIndex, rowIndex, this)
-                {
-                    Text = value.Value.ToString(),
-                };
+                var cell = new Cell(columnIndex, rowIndex, this, value.Value);
 
                 cell.SetValue(Grid.RowProperty, rowIndex);
                 cell.SetValue(Grid.ColumnProperty, columnIndex);
 
+                cell.PreviewKeyDown += Cell_KeyDown;
+                cell.KeyUp += Cell_KeyUp;
                 return cell;
             }).ToArray();
 
@@ -228,11 +258,72 @@ namespace DbWpfControls
         }
 
 
+
+        private IReadOnlyDictionary<string, object> GetValues(Cell cell, Func<Cell, object> selector)
+        {
+            var values = rows[cell.Row]
+                .Select(selector)
+                .Zip(showedEntities[cell.Row].GetFieldInfos())
+                .Select(n => (name: n.Item2.Name, value: n.Item2.InstantiateFieldType(n.Item1)))
+                .ToDictionary(n => n.name, n => n.value);
+
+            return values;
+        }
+
+        private IReadOnlyDictionary<string,object> GetNewValues(Cell cell)
+        {
+            return GetValues(cell, n => n.Text);
+        }
+
+        private IReadOnlyDictionary<string, object> GetOldValues(Cell cell)
+        {
+            return GetValues(cell, n => n.InitializedValue);
+        }
+
+
+
+        private void Cell_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            isCellBeingModified = true;
+
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                var cell = (Cell)sender;
+
+                var args = new CellModifiedEventArgs(cell.Row, cell.Column, GetOldValues(cell), GetNewValues(cell));
+
+                CellModified?.Invoke(sender, args);
+
+                //if (TryCommit((Cell)sender))
+                //{
+                //    Refresh();
+                //    isCellBeingModified = false;
+                //}
+
+                isCellBeingModified = false;
+
+            }
+        }
+
+        private void Cell_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            isCellBeingModified = false;
+        }
+
+
+
+
+
+
         public void ShowRows(int offset, int count)
         {
+            Offset = offset;
+            Count = count;
+
             showedEntities?.Clear();
             rowDefinitions?.Clear();
-            rows?.Clear();
+
+            DeleteRows();
 
             if (ItemSelector is null)
                 return;
@@ -244,12 +335,21 @@ namespace DbWpfControls
             if (!entities.Any())
                 return;
 
-            CreateColumns(entities.First());
+            if (headers is null)
+            {
+                CreateColumns(entities.First());
+            }
+
 
             foreach (var entity in entities)
             {
                 CreateRow(entity);
             }
+        }
+
+        public void Refresh()
+        {
+            ShowRows(Offset, Count);
         }
     }
 }

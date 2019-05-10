@@ -7,16 +7,23 @@ using System.Reflection;
 
 namespace DbFramework
 {
+    [Flags]
+    public enum Field
+    {
+        Key = 1,
+        NonKey =2,
+    }
+
     public abstract class Entity
     {
-        internal DbContext Context { get; }
+        public DbContext Context { get; }
 
         protected Entity(DbContext context)
         {
             Context = context;
         }
 
-        public void InitializeWith(IDictionary<string, object> fields)
+        public void InitializeWith(IReadOnlyDictionary<string, object> fields)
         {
             var props = GetType().GetProperties();
 
@@ -26,41 +33,113 @@ namespace DbFramework
             }
         }
 
-        public FieldInfo[] GetFieldInfos()
+        //public FieldInfo[] GetKeyInfos()
+        //{
+        //    var properties = GetType()
+        //       .GetProperties()
+        //       .Where(n => n.IsOnly<KeyAttribute>())
+        //       .Select(n =>
+        //       {
+        //           var name = n
+        //               .GetCustomAttribute<KeyAttribute>(false)
+        //               .Name;
+
+        //           var isNullable = n
+        //               .IsDefined<NullableAttribute>();
+
+        //           var type = n.PropertyType;
+
+        //           var field = new FieldInfo(name, isNullable, type);
+
+        //           return field;
+        //       }).ToArray();
+
+
+        //    return properties;
+        //}
+
+
+        public FieldInfo[] GetFieldInfos(Field options = Field.Key | Field.NonKey)
         {
             var properties = GetType()
-               .GetProperties()
-               .Where(n => n.IsOnly<FieldAttribute>())
-               .Select(n =>
-               {
-                   var name = n
-                       .GetCustomAttribute<FieldAttribute>(false)
-                       .Name;
+                   .GetProperties()
+                   .Where(n =>
+                   {
+                       if ((options & Field.Key) == Field.Key && n.IsOnly<KeyAttribute>())
+                       {
+                           return true;
+                       }
 
-                   var isNullable = n
-                       .IsDefined<NullableAttribute>();
+                       if ((options & Field.NonKey) == Field.NonKey && n.IsOnly<FieldAttribute>() && !n.IsOnly<KeyAttribute>())
+                       {
+                           return true;
+                       }
 
-                   var type = n.PropertyType;
+                       return false;
+                   })
+                   .Select(n =>
+                   {
+                       var name = n
+                           .GetCustomAttribute<FieldAttribute>(false)
+                           .Name;
 
-                   var field = new FieldInfo(name, isNullable, type);
+                       var isNullable = n
+                           .IsDefined<NullableAttribute>();
 
-                   return field;
-               }).ToArray();
-               
+                       var type = n.PropertyType;
 
-            return properties;
+                       var field = new FieldInfo(name, isNullable, type);
+
+                       return field;
+                   });
+
+            return properties.ToArray();
         }
 
-        public IDictionary<string, object> GetFieldValues()
+        //public FieldInfo[] GetFieldInfos()
+        //{
+        //    var properties = GetType()
+        //       .GetProperties()
+        //       .Where(n => n.IsOnly<FieldAttribute>())
+        //       .Select(n =>
+        //       {
+        //           var name = n
+        //               .GetCustomAttribute<FieldAttribute>(false)
+        //               .Name;
+
+        //           var isNullable = n
+        //               .IsDefined<NullableAttribute>();
+
+        //           var type = n.PropertyType;
+
+        //           var field = new FieldInfo(name, isNullable, type);
+
+        //           return field;
+        //       }).ToArray();
+               
+
+        //    return properties;
+        //}
+
+        public IDictionary<string, object> GetKeyValues()
+        {
+            var properties = GetType()
+                 .GetProperties()
+                 .Where(n => n.IsOnly<KeyAttribute>());
+
+            return GetValues(properties);
+        }
+
+        public IDictionary<string, object> GetFieldValues(bool shouldIncludeNull = false)
         {
             var properties = GetType()
                  .GetProperties()
                  .Where(n => n.IsOnly<FieldAttribute>());
 
-            return GetValues(properties);
+            return GetValues(properties, shouldIncludeNull);
         }
 
-        internal Dictionary<string, object> GetValues(IEnumerable<PropertyInfo> properties)
+        internal Dictionary<string, object> GetValues(IEnumerable<PropertyInfo> properties, bool shouldIncludeNull = false)
         {
             var values = new Dictionary<string, object>();
 
@@ -102,6 +181,10 @@ namespace DbFramework
                             {
                                 throw new Exception($"Field {TableName()}.{FieldName()} ({TableClassName()}.{PropertyName()}) with no default value was not assigned.");
                             }
+                        }
+                        else if (shouldIncludeNull)
+                        {
+                            Add(DBNull.Value);
                         }
                     }
                 }
@@ -153,13 +236,12 @@ namespace DbFramework
 
             var row = result.First();
 
-            var props = GetType().GetProperties();
+            var props = GetType().GetProperties().Where(n => n.IsOnly<FieldAttribute>());
 
             foreach (var field in row)
             {
                 var prop = props
-                    .Where(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key)
-                    .Single();
+                    .Single(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key);
 
                 var propValue = prop.GetValue(this);
 

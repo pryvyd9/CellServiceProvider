@@ -22,6 +22,10 @@ namespace DbWpfControls
             }
         }
 
+        //public static IEnumerable<T> Unite<T>(this IEnumerable<T> a, IEnumerable<T> b)
+        //{
+        //    return a.Concat(b).Distinct();
+        //}
         //public static IDictionary<T,V> ToDictionary<T,V>(this IEnumerable<(T,V)> col)
         //{
         //    return col.ToDictionary(n => n.Item1, n => n.Item2);
