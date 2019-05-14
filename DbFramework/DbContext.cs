@@ -3,29 +3,59 @@ using System.Threading.Tasks;
 using Npgsql;
 using System.Linq;
 using System;
+//using static DbFramework.Transact;
+using System.Data;
+using System.Reflection;
 
 namespace DbFramework
 {
     public class DbContext
     {
-        private readonly string connString;
+        private readonly string _connString;
+
+        public CommandFactory CommandFactory;
+
+        public ConnectionFactory ConnectionFactory;
+
 
         public DbContext(string connString)
         {
-            this.connString = connString;
+            this._connString = connString;
         }
 
 
-        internal void Commit(NpgsqlCommand command)
+        internal IEnumerable<IDictionary<string, object>> Commit(IDbCommand command)
         {
-            using (var conn = new NpgsqlConnection(connString))
+            var rows = new List<Dictionary<string, object>>();
+
+            using (var conn = ConnectionFactory.Create(_connString))
             {
                 conn.Open();
 
                 command.Connection = conn;
                 command.Prepare();
-                command.ExecuteNonQuery();
+
+
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var row = new Dictionary<string, object>();
+
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            var fieldName = reader.GetName(i);
+                            var fieldValue = reader.GetValue(i);
+
+                            row[fieldName] = fieldValue;
+                        }
+
+                        rows.Add(row);
+                    }
+                }
             }
+
+            return rows;
         }
 
 
@@ -37,10 +67,9 @@ namespace DbFramework
                    .OfType<TableAttribute>()
                    .Single();
 
-            var command = new NpgsqlCommand
-            {
-                CommandText = $"select * from \"{tableAttribute.Name}\"",
-            };
+            var command = CommandFactory.Empty();
+
+            command.CommandText = $"select * from \"{tableAttribute.Name}\"";
 
             var entities = Select<T>(command);
 
@@ -65,13 +94,13 @@ namespace DbFramework
 
 
 
-        private ISet<T> Select<T>(NpgsqlCommand command) where T : Entity
+        private ISet<T> Select<T>(IDbCommand command) where T : Entity
         {
             HashSet<T> set = new HashSet<T>();
 
             var type = typeof(T);
 
-            using (var conn = new NpgsqlConnection(connString))
+            using (var conn = ConnectionFactory.Create(_connString))
             {
                 conn.Open();
 
@@ -84,8 +113,8 @@ namespace DbFramework
 
                     var properties = type
                         .GetProperties()
-                        .Where(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Only())
-                        .ToDictionary(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Single().Name, n => n);
+                        .Where(n => n.IsOnly<FieldAttribute>())
+                        .ToDictionary(n => n.GetCustomAttribute<FieldAttribute>(false).Name, n => n);
                     
 
                     while (reader.Read())
@@ -94,7 +123,7 @@ namespace DbFramework
                             .GetConstructors()
                             .Single(n => n
                                 .GetParameters()
-                                .Only(m => m.ParameterType == GetType()))
+                                .Only(m => m.ParameterType.IsAssignableFrom(GetType())))
                             .Invoke(new[] { this });
 
                         for (int i = 0; i < reader.FieldCount; i++)
@@ -149,9 +178,9 @@ namespace DbFramework
             return set;
         }
 
-        private void Delete(NpgsqlCommand command)
+        private void Delete(IDbCommand command)
         {
-            using (var conn = new NpgsqlConnection(connString))
+            using (var conn = new NpgsqlConnection(_connString))
             {
                 conn.Open();
 

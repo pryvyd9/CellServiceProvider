@@ -7,42 +7,139 @@ using System.Reflection;
 
 namespace DbFramework
 {
+    [Flags]
+    public enum Field
+    {
+        Key = 1,
+        NonKey =2,
+    }
+
     public abstract class Entity
     {
-
-        private readonly DbContext context;
+        public DbContext Context { get; }
 
         protected Entity(DbContext context)
         {
-            this.context = context;
-
-            Initialize();
+            Context = context;
         }
 
-        protected virtual void Initialize()
+        public void InitializeWith(IReadOnlyDictionary<string, object> fields)
         {
-            //// Add entity to dbcontext hashset.
+            var props = GetType().GetProperties();
 
-            //var property = context
-            //    .GetType()
-            //    .GetProperties()
-            //    .Single(n => n
-            //        .PropertyType
-            //        .GetGenericArguments()
-            //        .Only(m => m == GetType()
-            //    ));
-
-            //var addMethod = property
-            //    .PropertyType
-            //    .GetMethod("Add");
-
-            //var propVal = property.GetValue(context);
-
-            //addMethod.Invoke(propVal, new[] { this });
+            foreach (var field in fields)
+            {
+                props.First(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key).SetValue(this, field.Value);
+            }
         }
 
+        //public FieldInfo[] GetKeyInfos()
+        //{
+        //    var properties = GetType()
+        //       .GetProperties()
+        //       .Where(n => n.IsOnly<KeyAttribute>())
+        //       .Select(n =>
+        //       {
+        //           var name = n
+        //               .GetCustomAttribute<KeyAttribute>(false)
+        //               .Name;
 
-        private Dictionary<string, object> GetValues(IEnumerable<PropertyInfo> properties)
+        //           var isNullable = n
+        //               .IsDefined<NullableAttribute>();
+
+        //           var type = n.PropertyType;
+
+        //           var field = new FieldInfo(name, isNullable, type);
+
+        //           return field;
+        //       }).ToArray();
+
+
+        //    return properties;
+        //}
+
+
+        public FieldInfo[] GetFieldInfos(Field options = Field.Key | Field.NonKey)
+        {
+            var properties = GetType()
+                   .GetProperties()
+                   .Where(n =>
+                   {
+                       if ((options & Field.Key) == Field.Key && n.IsOnly<KeyAttribute>())
+                       {
+                           return true;
+                       }
+
+                       if ((options & Field.NonKey) == Field.NonKey && n.IsOnly<FieldAttribute>() && !n.IsOnly<KeyAttribute>())
+                       {
+                           return true;
+                       }
+
+                       return false;
+                   })
+                   .Select(n =>
+                   {
+                       var name = n
+                           .GetCustomAttribute<FieldAttribute>(false)
+                           .Name;
+
+                       var isNullable = n
+                           .IsDefined<NullableAttribute>();
+
+                       var type = n.PropertyType;
+
+                       var field = new FieldInfo(name, isNullable, type);
+
+                       return field;
+                   });
+
+            return properties.ToArray();
+        }
+
+        //public FieldInfo[] GetFieldInfos()
+        //{
+        //    var properties = GetType()
+        //       .GetProperties()
+        //       .Where(n => n.IsOnly<FieldAttribute>())
+        //       .Select(n =>
+        //       {
+        //           var name = n
+        //               .GetCustomAttribute<FieldAttribute>(false)
+        //               .Name;
+
+        //           var isNullable = n
+        //               .IsDefined<NullableAttribute>();
+
+        //           var type = n.PropertyType;
+
+        //           var field = new FieldInfo(name, isNullable, type);
+
+        //           return field;
+        //       }).ToArray();
+               
+
+        //    return properties;
+        //}
+
+        public IDictionary<string, object> GetKeyValues()
+        {
+            var properties = GetType()
+                 .GetProperties()
+                 .Where(n => n.IsOnly<KeyAttribute>());
+
+            return GetValues(properties);
+        }
+
+        public IDictionary<string, object> GetFieldValues(bool shouldIncludeNull = false)
+        {
+            var properties = GetType()
+                 .GetProperties()
+                 .Where(n => n.IsOnly<FieldAttribute>());
+
+            return GetValues(properties, shouldIncludeNull);
+        }
+
+        internal Dictionary<string, object> GetValues(IEnumerable<PropertyInfo> properties, bool shouldIncludeNull = false)
         {
             var values = new Dictionary<string, object>();
 
@@ -74,11 +171,7 @@ namespace DbFramework
                     }
                     else
                     {
-                        if (Has<DefaultAttribute>(out _))
-                        {
-                            continue;
-                        }
-                        else
+                        if (!Has<DefaultAttribute>(out _))
                         {
                             if (value.IsNull && Has<NullableAttribute>(out _))
                             {
@@ -89,11 +182,15 @@ namespace DbFramework
                                 throw new Exception($"Field {TableName()}.{FieldName()} ({TableClassName()}.{PropertyName()}) with no default value was not assigned.");
                             }
                         }
+                        else if (shouldIncludeNull)
+                        {
+                            Add(DBNull.Value);
+                        }
                     }
                 }
                 else if (value.IsNull)
                 {
-                    if (Has<NullableAttribute>(out var nullableAttribute))
+                    if (Has<NullableAttribute>(out _))
                     {
                         Add(DBNull.Value);
                     }
@@ -122,112 +219,51 @@ namespace DbFramework
 
                 string FieldName() => attributes.OfType<FieldAttribute>().Single().Name;
 
-                string TableClassName() => property.DeclaringType.FullName;
+                string TableClassName() => property.DeclaringType?.FullName;
 
-                string TableName() => property.DeclaringType.GetCustomAttributes(false).OfType<TableAttribute>().Single().Name;
+                string TableName() => property.DeclaringType?.GetCustomAttribute<TableAttribute>(false).Name;
             }
 
             return values;
 
         }
 
-
         public virtual void Commit()
         {
-            // Create statement
+            var result = Context.Commit(Context.CommandFactory.Commit(this));
 
-            var tableAttribute = GetType()
-                .GetCustomAttributes(false)
-                .OfType<TableAttribute>()
-                .Single();
+            // Fill not assigned fields with values retrieved from database.
 
-            var properties = GetType()
-                .GetProperties()
-                .Where(n => n
-                    .GetCustomAttributes(false)
-                    .OfType<FieldAttribute>()
-                    .Only()
-                );
+            var row = result.First();
 
-            var values = GetValues(properties);
+            var props = GetType().GetProperties().Where(n => n.IsOnly<FieldAttribute>());
 
-            var keys = properties
-                .Where(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Any());
-
-            var keyNames = keys
-                .Select(n => n.GetCustomAttributes(false).OfType<KeyAttribute>().Single().Name);
-
-            var nonKeyNames = properties
-                .Except(keys)
-                .Select(n => n.GetCustomAttributes(false).OfType<FieldAttribute>().Single().Name);
-
-            var builder = new StringBuilder()
-                .Append($"insert into \"{tableAttribute.Name}\" (")
-                .AppendJoin(",", values.Keys.Select(n => $"\"{n}\""))
-                .Append(") values (")
-                .AppendJoin(",", values.Keys.Select(n => $"@{n}"))
-                .Append(")");
-
-            if (nonKeyNames.Any())
+            foreach (var field in row)
             {
-                builder
-                    .Append($" on conflict (")
-                    .AppendJoin(",", keyNames.Select(n => $"\"{n}\""))
-                    .Append(") do update set ")
-                    .AppendJoin(",", nonKeyNames.Select(n => $"\"{n}\" = excluded.\"{n}\""));
+                var prop = props
+                    .Single(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key);
+
+                var propValue = prop.GetValue(this);
+
+                var isAssigned = (bool)propValue
+                    .GetType()
+                    .GetProperty("IsAssigned")
+                    .GetValue(propValue);
+
+                if (!isAssigned)
+                {
+                    var constructor = prop.PropertyType.GetConstructor(new[] { field.Value.GetType() });
+
+                    var newValue = constructor.Invoke(new[] { field.Value });
+
+                    prop.SetValue(this, newValue);
+                }
             }
-                
-
-
-            // Prepare statement
-
-            context.Commit(CreateCommand(builder.ToString(), values));
         }
 
         public virtual void Delete()
         {
-            // Create statement
-
-            var tableAttribute = GetType()
-                .GetCustomAttributes(false)
-                .OfType<TableAttribute>()
-                .Single();
-
-
-            var keys = GetType()
-                .GetProperties()
-                .Where(n => n
-                    .GetCustomAttributes(false)
-                    .OfType<KeyAttribute>()
-                    .Only()
-                );
-
-            var values = GetValues(keys);
-
-            var builder = new StringBuilder()
-                .Append($"delete from \"{tableAttribute.Name}\" where ")
-                .AppendJoin(" and ", values.Select(n => $"\"{n.Key}\" = @{n.Key}"));
-
-
-            // Prepare statement
-
-            context.Commit(CreateCommand(builder.ToString(), values));
-
-        }
-
-        private NpgsqlCommand CreateCommand(string commandString, Dictionary<string, object> values)
-        {
-            var command = new NpgsqlCommand
-            {
-                CommandText = commandString,
-            };
-
-            var preparedParams = values
-                .Select(n => new NpgsqlParameter($"@{n.Key}", n.Value)).ToArray();
-
-            command.Parameters.AddRange(preparedParams);
-
-            return command;
+            Context.Commit(Context.CommandFactory.Delete(this));
         }
     }
 }

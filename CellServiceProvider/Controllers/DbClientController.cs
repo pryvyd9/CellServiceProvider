@@ -9,7 +9,7 @@ using CellServiceProvider.Models;
 namespace CellServiceProvider.Controllers
 {
    
-    public class HomeController : Controller
+    public class DbClientController : Controller
     {
         private void TestEntities()
         {
@@ -23,7 +23,7 @@ namespace CellServiceProvider.Controllers
             };
 
             var users = dbContext.SelectAll<User>();
-            var users1 = users.Where(n => n.NickName.Value[0] == 'p');
+            //var users1 = users.Where(n => n.NickName.Value[0] == 'p');
 
             //users.First().CommitWith(users.ElementAt(1)).Commit();
             //users.First().CommitWith(users.ElementAt(1)).CommitWith("save1").RollBackWith<Exception>().Commit();
@@ -40,6 +40,29 @@ namespace CellServiceProvider.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public IActionResult Users()
+        {
+            //string connString = "Server=127.0.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
+            string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
+
+            var dbContext = new ProviderContext(connString)
+            {
+                CommandFactory = new DbFramework.NpgsqlCommandFactory(),
+                ConnectionFactory = new DbFramework.NpgsqlConnectionFactory(),
+            };
+
+            var users = dbContext.SelectAll<User>();
+
+            var model = new WebClient.Models.EntityTableAdapter()
+            {
+                Entities = users.ToArray(),
+            };
+
+            model.CreateTable();
+
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

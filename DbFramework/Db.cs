@@ -1,7 +1,7 @@
 ﻿namespace DbFramework
 {
 
-    public struct Db<T> : IDbField
+    public struct Db<T> : IDbField, System.IComparable<Db<T>>
     {
         public bool IsAssigned { get; private set; }
 
@@ -73,5 +73,86 @@
             };
         }
 
+        public override string ToString()
+        {
+            return IsNull ? string.Empty : Value.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Db<T> db)
+            {
+                return db.Value.Equals(Value) && IsAssigned.Equals(db.IsAssigned) && IsNull.Equals(db.IsNull);
+            }
+            else if (obj is T t)
+            {
+                return Value.Equals(t) && _isNotNull;
+            }
+
+            return false;
+
+        }
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode() + IsAssigned.GetHashCode() + IsNull.GetHashCode();
+        }
+
+        //public int CompareTo(T other)
+        //{
+           
+        //    throw new System.NotImplementedException();
+        //}
+
+        public int CompareTo(Db<T> other)
+        {
+            if (IsAssigned && other.IsAssigned)
+            {
+                if (IsNull && other.IsNull)
+                {
+                    return 0;
+                }
+                else if (IsNull && !other.IsNull)
+                {
+                    return -1;
+                }
+                else if (!IsNull && other.IsNull)
+                {
+                    return 1;
+                }
+                else
+                {
+                    try
+                    {
+                        return ((System.IComparable<T>)Value).CompareTo(other.Value);
+                    }
+                    catch (System.Exception)
+                    {
+                        return 0;
+                    }
+                }
+            }
+            else if (IsAssigned && !other.IsAssigned)
+            {
+                return 1;
+            }
+            else if (!IsAssigned && !other.IsAssigned)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+            //throw new System.NotImplementedException();
+        }
+
+        //public static bool operator ==(Db<T> ob1, Db<T> ob2)
+        //{
+        //    return ob1.Value.Equals(ob2.Value);
+        //}
+        //public static bool operator !=(Db<T> ob1, Db<T> ob2)
+        //{
+        //    return !(ob1 == ob2);
+        //}
     }
 }

@@ -58,12 +58,18 @@
     <Compile Include="Attributes\KeyAttribute.cs" />
     <Compile Include="Attributes\NullableAttribute.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
+    <Compile Include="ConnectionFactory\ConnectionFactory.cs" />
+    <Compile Include="CommandFactory\CommandFactory.cs" />
     <Compile Include="Db.cs" />
     <Compile Include="DbContext.cs" />
     <Compile Include="Attributes\DefaultOverrideAttribute.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FieldInfo.cs" />
+    <Compile Include="IDbDataAdapter.cs" />
     <Compile Include="IDbField.cs" />
+    <Compile Include="CommandFactory\NpgsqlCommandFactory.cs" />
+    <Compile Include="ConnectionFactory\NpgsqlConnectionFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
