@@ -27,7 +27,7 @@ namespace DbWpfControls.TableControl
         public override int GetHashCode()
         {
             //return this.Sum(n => n.Key.Sum(m => m) + n.Value.ToString().Sum(m => m));
-            return this.Sum(n => n.Key.GetHashCode() + n.Value.GetHashCode());
+            return (int)this.Sum(n => n.Key.GetHashCode() + (long)n.Value.GetHashCode());
         }
 
     }

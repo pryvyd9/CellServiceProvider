@@ -16,6 +16,8 @@ namespace DbWpfControls.TableControl
 
         public TableControl TableControl { get; set; }
 
+        internal Button InsertButton { get; private set; }
+
         public InsertBox()
         {
             Orientation = Orientation.Horizontal;
@@ -42,14 +44,14 @@ namespace DbWpfControls.TableControl
             var nonkeys = prototype.GetFieldInfos(Field.NonKey);
 
 
-            var insertButton = new Button
+            InsertButton = new Button
             {
                 Content = "Insert",
             };
 
-            insertButton.Click += InsertButton_Click;
+            InsertButton.Click += InsertButton_Click;
 
-            Children.Add(insertButton);
+            Children.Add(InsertButton);
             Add(keys, Brushes.Yellow);
             Add(nonkeys, Brushes.White);
 
@@ -92,7 +94,7 @@ namespace DbWpfControls.TableControl
 
         private void InsertButton_Click(object sender, RoutedEventArgs e)
         {
-            TableControl.Execute(new InsertCommand(GetValues()));
+            new InsertCommand(TableControl, GetValues()).ExecuteAsync();
         }
     }
 }

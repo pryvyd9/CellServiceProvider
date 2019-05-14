@@ -12,6 +12,7 @@ namespace DbWpfControls
 {
 
     public delegate void CellModifiedEventHandler(object sender, CellModifiedEventArgs e);
+    public delegate void CellSelectedEventHandler(object sender);
 
     public class Table : Grid
     {
@@ -24,6 +25,7 @@ namespace DbWpfControls
         public Func<IEnumerable<Entity>> ItemSelector { get; set; }
 
         public event CellModifiedEventHandler CellModified;
+        public event CellSelectedEventHandler CellSelected;
 
         public double RowHeight = 24;
         public double ColWidth = 150;
@@ -46,6 +48,7 @@ namespace DbWpfControls
         Header[] headers { get; set; }
 
         readonly List<Cell[]> rows = new List<Cell[]>();
+        //readonly List<Label> rowIndices = new List<Label>();
 
         #endregion
 
@@ -245,6 +248,7 @@ namespace DbWpfControls
 
                 cell.PreviewKeyDown += Cell_KeyDown;
                 cell.KeyUp += Cell_KeyUp;
+                cell.PreviewMouseDown += Cell_MouseDown;
                 return cell;
             }).ToArray();
 
@@ -256,7 +260,6 @@ namespace DbWpfControls
                 contentGrid.Children.Add(cell);
             }
         }
-
 
 
         private IReadOnlyDictionary<string, object> GetValues(Cell cell, Func<Cell, object> selector)
@@ -275,12 +278,15 @@ namespace DbWpfControls
             return GetValues(cell, n => n.Text);
         }
 
-        private IReadOnlyDictionary<string, object> GetOldValues(Cell cell)
+        internal IReadOnlyDictionary<string, object> GetOldValues(Cell cell)
         {
             return GetValues(cell, n => n.InitializedValue);
         }
 
-
+        //internal IReadOnlyDictionary<string, object> GetOldValues(int rowId)
+        //{
+        //    return GetOldValues(rows[rowId][0]);
+        //}
 
         private void Cell_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
@@ -289,6 +295,24 @@ namespace DbWpfControls
             if (e.Key == System.Windows.Input.Key.Enter)
             {
                 var cell = (Cell)sender;
+
+                // Paint modified row with yellow.
+                foreach (var row in rows[cell.Row])
+                {
+                    if (row.Background == Brushes.YellowGreen)
+                    {
+                        continue;
+                    }
+                    else if (row == cell)
+                    {
+                        row.Background = Brushes.YellowGreen;
+                    }
+                    else
+                    {
+                        row.Background = Brushes.LightGoldenrodYellow;
+                    }
+                }
+              
 
                 var args = new CellModifiedEventArgs(cell.Row, cell.Column, GetOldValues(cell), GetNewValues(cell));
 
@@ -310,8 +334,31 @@ namespace DbWpfControls
             isCellBeingModified = false;
         }
 
+        private void Cell_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            CellSelected?.Invoke(sender);
+        }
 
 
+        //internal void SelectRow(Cell cell)
+        //{
+        //    // Paint modified row with yellow.
+        //    foreach (var row in rows[cell.Row])
+        //    {
+        //        if (row.Background == Brushes.YellowGreen)
+        //        {
+        //            continue;
+        //        }
+        //        else if (row == cell)
+        //        {
+        //            row.Background = Brushes.YellowGreen;
+        //        }
+        //        else
+        //        {
+        //            row.Background = Brushes.LightGoldenrodYellow;
+        //        }
+        //    }
+        //}
 
 
 

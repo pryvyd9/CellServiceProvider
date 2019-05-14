@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using DbFramework;
 using CellServiceProvider.Models;
+using System.Windows.Input;
+using System.Reflection;
 
 namespace WinClient
 {
@@ -19,6 +21,7 @@ namespace WinClient
         //const string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
 
         private DbWpfControls.TableControl.TableControl table;
+        //private DbWpfControls.DbControl.DbControl dbControl;
         //private DbWpfControls.Table table;
         private ProviderContext dbContext;
         private MainWindow mainWindow;
@@ -26,6 +29,7 @@ namespace WinClient
         public App()
         {
             mainWindow = new MainWindow();
+            mainWindow.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
             dbContext = new ProviderContext(connString)
             {
@@ -34,31 +38,39 @@ namespace WinClient
             };
 
             //var users = dbContext.SelectAll<User>();
-            var users = dbContext.SelectAll<Service>();
+            //var users = dbContext.SelectAll<Service>();
 
-            table = mainWindow.dbGrid;
+            //table = mainWindow.dbGrid;
 
-            table.EntityType = typeof(Service);
+            //table.EntityType = typeof(Service);
 
-            table.DbContext = dbContext;
+            //table.DbContext = dbContext;
 
-            table.ItemSelector = () => dbContext.SelectAll<Service>();
-            //table.Refresh();
+            //table.ItemSelector = () => dbContext.SelectAll<Service>();
 
-            //table.CellModified += Table_CellModified;
+
+            var sources = new Dictionary<string, (Type, DbContext)>
+            {
+                ["services"] = (typeof(Service), dbContext),
+                ["users"] = (typeof(User), dbContext),
+            };
+
+            mainWindow.dbControl.ScriptAssemblies = new[] 
+            {
+                ("CellServiceProvider.Models", Assembly.GetAssembly(typeof(Service))),
+            };
+
+            mainWindow.dbControl.ShowEntities(sources);
+
 
             mainWindow.Show();
         }
 
-        //[Obsolete("Hardcoded primary key.")]
-        //private void Table_CellModified(object sender, DbWpfControls.CellModifiedEventArgs e)
-        //{
-        //    var entity = dbContext.SelectAll<User>().Single(n => n.Id.Equals(e.OldValues["id"]));
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            //table.AppKeyDown?.Invoke(sender, e);
+            mainWindow.dbControl.AppKeyDown?.Invoke(sender, e);
+        }
 
-        //    entity.InitializeWith(e.NewValues);
-        //    entity.Commit();
-
-        //    table.Refresh();
-        //}
     }
 }

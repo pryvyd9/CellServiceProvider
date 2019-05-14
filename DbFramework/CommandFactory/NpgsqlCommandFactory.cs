@@ -73,7 +73,7 @@ namespace DbFramework
             var builder = new StringBuilder()
                 .Append($"delete from \"{tableAttribute.Name}\" where ")
                 .AppendJoin(" and ", values.Select(n => $"\"{n.Key}\" = @{n.Key}"))
-                .Append("returning *");
+                .Append(" returning *");
 
 
             // Prepare statement

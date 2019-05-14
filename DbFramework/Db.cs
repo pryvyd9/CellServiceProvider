@@ -1,7 +1,7 @@
 ﻿namespace DbFramework
 {
 
-    public struct Db<T> : IDbField
+    public struct Db<T> : IDbField, System.IComparable<Db<T>>
     {
         public bool IsAssigned { get; private set; }
 
@@ -95,6 +95,55 @@
         public override int GetHashCode()
         {
             return Value.GetHashCode() + IsAssigned.GetHashCode() + IsNull.GetHashCode();
+        }
+
+        //public int CompareTo(T other)
+        //{
+           
+        //    throw new System.NotImplementedException();
+        //}
+
+        public int CompareTo(Db<T> other)
+        {
+            if (IsAssigned && other.IsAssigned)
+            {
+                if (IsNull && other.IsNull)
+                {
+                    return 0;
+                }
+                else if (IsNull && !other.IsNull)
+                {
+                    return -1;
+                }
+                else if (!IsNull && other.IsNull)
+                {
+                    return 1;
+                }
+                else
+                {
+                    try
+                    {
+                        return ((System.IComparable<T>)Value).CompareTo(other.Value);
+                    }
+                    catch (System.Exception)
+                    {
+                        return 0;
+                    }
+                }
+            }
+            else if (IsAssigned && !other.IsAssigned)
+            {
+                return 1;
+            }
+            else if (!IsAssigned && !other.IsAssigned)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+            //throw new System.NotImplementedException();
         }
 
         //public static bool operator ==(Db<T> ob1, Db<T> ob2)
