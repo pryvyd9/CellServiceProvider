@@ -13,9 +13,9 @@
             <ColumnDefinition Width="333*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="45"/>
-            <RowDefinition Height="377*"/>
+            <RowDefinition Height="37"/>
+            <RowDefinition Height="46"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="1">
