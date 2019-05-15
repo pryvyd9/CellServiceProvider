@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using DbFramework;
+using System;
 
 namespace DbWpfControls.TableControl
 {
@@ -12,11 +13,18 @@ namespace DbWpfControls.TableControl
 
         private readonly List<StackPanel> fields = new List<StackPanel>();
 
+
+        private Type type;
+        private DbContext dbContext;
+
+
         private Entity prototype;
 
         public TableControl TableControl { get; set; }
 
         internal Button InsertButton { get; private set; }
+
+
 
         public InsertBox()
         {
@@ -25,20 +33,25 @@ namespace DbWpfControls.TableControl
 
         public void Reset()
         {
-            CreateBoxFor(prototype);
+            CreateBoxFor(type, dbContext);
         }
 
-        public void CreateBoxFor(Entity prototype)
+        public void CreateBoxFor(Type type, DbContext dbContext)
         {
             fields.Clear();
             Children.Clear();
 
-            if (prototype is null)
+            if (type is null || dbContext is null)
             {
                 return;
             }
 
-            this.prototype = prototype;
+            this.type = type;
+            this.dbContext = dbContext;
+
+            var constructor = type.GetConstructor(new[] { typeof(DbContext) });
+
+            prototype = (Entity)constructor.Invoke(new[] { dbContext });
 
             var keys = prototype.GetFieldInfos(Field.Key);
             var nonkeys = prototype.GetFieldInfos(Field.NonKey);
@@ -79,6 +92,59 @@ namespace DbWpfControls.TableControl
                 }
             }
         }
+
+
+        //public void CreateBoxFor(Entity prototype)
+        //{
+        //    fields.Clear();
+        //    Children.Clear();
+
+        //    if (prototype is null)
+        //    {
+        //        return;
+        //    }
+
+        //    this.prototype = prototype;
+
+        //    var keys = prototype.GetFieldInfos(Field.Key);
+        //    var nonkeys = prototype.GetFieldInfos(Field.NonKey);
+
+
+        //    InsertButton = new Button
+        //    {
+        //        Content = "Insert",
+        //    };
+
+        //    InsertButton.Click += InsertButton_Click;
+
+        //    Children.Add(InsertButton);
+        //    Add(keys, Brushes.Yellow);
+        //    Add(nonkeys, Brushes.White);
+
+        //    void Add(IEnumerable<FieldInfo> items, Brush brush)
+        //    {
+        //        foreach (var item in items)
+        //        {
+        //            var field = new StackPanel
+        //            {
+        //                Background = brush,
+        //            };
+
+        //            var label = new Label()
+        //            {
+        //                Content = item.Name,
+        //            };
+
+        //            var textBox = new TextBox();
+
+        //            field.Children.Add(label);
+        //            field.Children.Add(textBox);
+
+        //            fields.Add(field);
+        //            Children.Add(field);
+        //        }
+        //    }
+        //}
 
         private IReadOnlyDictionary<string, object> GetValues()
         {

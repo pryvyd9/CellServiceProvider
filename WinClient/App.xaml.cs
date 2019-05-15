@@ -60,6 +60,10 @@ namespace WinClient
             {
                 ["services"] = (typeof(Service), dbContext),
                 ["users"] = (typeof(User), dbContext),
+                ["user_groups"] = (typeof(UserGroup), dbContext),
+                ["users_to_services"] = (typeof(UserToService), dbContext),
+                ["bills"] = (typeof(Bill), dbContext),
+
             };
 
             mainWindow.dbControl.ScriptAssemblies = new[]
