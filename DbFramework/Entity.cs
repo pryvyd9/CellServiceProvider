@@ -33,35 +33,38 @@ namespace DbFramework
             }
         }
 
-        //public FieldInfo[] GetKeyInfos()
-        //{
-        //    var properties = GetType()
-        //       .GetProperties()
-        //       .Where(n => n.IsOnly<KeyAttribute>())
-        //       .Select(n =>
-        //       {
-        //           var name = n
-        //               .GetCustomAttribute<KeyAttribute>(false)
-        //               .Name;
-
-        //           var isNullable = n
-        //               .IsDefined<NullableAttribute>();
-
-        //           var type = n.PropertyType;
-
-        //           var field = new FieldInfo(name, isNullable, type);
-
-        //           return field;
-        //       }).ToArray();
-
-
-        //    return properties;
-        //}
-
-
-        public FieldInfo[] GetFieldInfos(Field options = Field.Key | Field.NonKey)
+        public void InitializeWithConvert(IReadOnlyDictionary<string, object> fields)
         {
-            var properties = GetType()
+            var props = GetType().GetProperties().Where(n => n.IsDefined<FieldAttribute>());
+            var infos = GetFieldInfos();
+
+            for (int i = 0; i < fields.Count(); i++)
+            {
+                var field = fields.ElementAt(i);
+
+                var info = infos.First(n => n.Name == field.Key);
+
+                var value = info.InstantiateFieldType(field.Value);
+
+                props.First(n => n.GetCustomAttribute<FieldAttribute>(false).Name == info.Name).SetValue(this, value);
+            }
+        }
+
+       
+
+        public static string GetTableName(Type entityType)
+        {
+            return entityType.GetCustomAttribute<TableAttribute>().Name;
+        }
+
+        public static FieldInfo[] GetFieldInfos(Type entityType, Field options = Field.Key | Field.NonKey)
+        {
+            if (!typeof(Entity).IsAssignableFrom(entityType))
+            {
+                throw new Exception("given type must derive from Entity");
+            }
+
+            var properties = entityType
                    .GetProperties()
                    .Where(n =>
                    {
@@ -83,12 +86,15 @@ namespace DbFramework
                            .GetCustomAttribute<FieldAttribute>(false)
                            .Name;
 
-                       var isNullable = n
-                           .IsDefined<NullableAttribute>();
+                       var isNullable = n.IsDefined<NullableAttribute>();
+
+                       var isKey = n.IsDefined<KeyAttribute>();
+
+                       var isRequired = !n.IsDefined<DefaultAttribute>() && !isNullable;
 
                        var type = n.PropertyType;
 
-                       var field = new FieldInfo(name, isNullable, type);
+                       var field = new FieldInfo(name, isNullable, isRequired, isKey, type);
 
                        return field;
                    });
@@ -96,30 +102,45 @@ namespace DbFramework
             return properties.ToArray();
         }
 
-        //public FieldInfo[] GetFieldInfos()
-        //{
-        //    var properties = GetType()
-        //       .GetProperties()
-        //       .Where(n => n.IsOnly<FieldAttribute>())
-        //       .Select(n =>
-        //       {
-        //           var name = n
-        //               .GetCustomAttribute<FieldAttribute>(false)
-        //               .Name;
+        public FieldInfo[] GetFieldInfos(Field options = Field.Key | Field.NonKey)
+        {
+            return GetFieldInfos(GetType(), options);
 
-        //           var isNullable = n
-        //               .IsDefined<NullableAttribute>();
+            //var properties = GetType()
+            //       .GetProperties()
+            //       .Where(n =>
+            //       {
+            //           if ((options & Field.Key) == Field.Key && n.IsOnly<KeyAttribute>())
+            //           {
+            //               return true;
+            //           }
 
-        //           var type = n.PropertyType;
+            //           if ((options & Field.NonKey) == Field.NonKey && n.IsOnly<FieldAttribute>() && !n.IsOnly<KeyAttribute>())
+            //           {
+            //               return true;
+            //           }
 
-        //           var field = new FieldInfo(name, isNullable, type);
+            //           return false;
+            //       })
+            //       .Select(n =>
+            //       {
+            //           var name = n
+            //               .GetCustomAttribute<FieldAttribute>(false)
+            //               .Name;
 
-        //           return field;
-        //       }).ToArray();
-               
+            //           var isNullable = n
+            //               .IsDefined<NullableAttribute>();
 
-        //    return properties;
-        //}
+            //           var type = n.PropertyType;
+
+            //           var field = new FieldInfo(name, isNullable, type);
+
+            //           return field;
+            //       });
+
+            //return properties.ToArray();
+        }
+
 
         public IDictionary<string, object> GetKeyValues()
         {
@@ -244,13 +265,12 @@ namespace DbFramework
                     .Single(n => n.GetCustomAttribute<FieldAttribute>(false).Name == field.Key);
 
                 var propValue = prop.GetValue(this);
-
                 var isAssigned = (bool)propValue
                     .GetType()
                     .GetProperty("IsAssigned")
                     .GetValue(propValue);
 
-                if (!isAssigned)
+                if (!isAssigned && !(field.Value is DBNull))
                 {
                     var constructor = prop.PropertyType.GetConstructor(new[] { field.Value.GetType() });
 

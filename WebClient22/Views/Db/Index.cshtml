@@ -1,0 +1,8 @@
+﻿@using DbFramework
+@model WebClient22.Models.TableProvider
+
+@{
+	ViewData["Title"] = Entity.GetTableName(Model.EntityType);
+}
+
+<partial name="../Db/_ViewTableControl.cshtml" />

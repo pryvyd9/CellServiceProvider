@@ -6,12 +6,16 @@ namespace DbFramework
     {
         public readonly string Name;
         public readonly bool IsNullable;
+        public readonly bool IsKey;
+        public readonly bool IsRequired;
         public readonly Type Type;
 
-        public FieldInfo(string name, bool isNullable, Type type)
+        public FieldInfo(string name, bool isNullable, bool isRequired, bool isKey, Type type)
         {
             Name = name;
             IsNullable = isNullable;
+            IsRequired = isRequired;
+            IsKey = isKey;
             Type = type;
         }
 
