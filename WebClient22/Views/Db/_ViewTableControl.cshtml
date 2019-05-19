@@ -1,0 +1,14 @@
+﻿@using DbFramework
+@model WebClient22.Models.TableProvider
+
+<form asp-controller="Db" asp-action="ShowTable" method="get">
+	<select asp-items="@(new SelectList(Model.AvailableTables, "Value", "Key"))" name="__entityType">
+		<option value="@Model.EntityType.FullName">@Entity.GetTableName(Model.EntityType)</option>
+	</select>
+	<button type="submit">Show</button>
+</form>
+
+<h2>@ViewData["Title"]</h2>
+<h3 class="error-message">@ViewData["Message"]</h3>
+
+<partial name="../Db/_ViewTable.cshtml" />

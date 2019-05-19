@@ -1,0 +1,63 @@
+﻿@using DbFramework
+@model WebClient22.Models.TableProvider
+
+
+	<div class="db-table" method="post">
+
+		@{
+			var fields = Entity.GetFieldInfos(Model.EntityType);
+			var i = 0;
+		}
+
+		<div class="db-header">
+
+			<div class="db-header-index">rowId</div>
+
+			@foreach (var field in fields)
+			{
+				<div class="db-header-cell">@field.Name</div>
+			}
+			<div class="db-controls"></div>
+		</div>
+
+			@foreach (var entity in Model.Entities)
+			{
+				var values = entity.GetFieldValues();
+
+				<form asp-controller="Db" class="db-row">
+
+					<input type="hidden" name="__entityType" value="@Model.EntityType.FullName" />
+					<input type="hidden" name="__index" value="@i" />
+
+					<div class="db-row-index">@i</div>
+
+					@foreach (var field in fields)
+					{
+						@*<input type="text" name="@field.Name" class="db-row-cell" value="@values[field.Name]?.ToString()" />*@
+						<input type="text" name="@field.Name" class="db-row-cell" value="@(values.ContainsKey(field.Name) ? values[field.Name]?.ToString() : "")" />
+					}
+					<div class="db-controls">
+						<button type="submit" asp-action="Update">Update</button>
+						<button type="submit" asp-action="Delete">Delete</button>
+					</div>
+				</form>
+
+				i++;
+			}
+
+			<form asp-controller="Db" class="db-row">
+
+				<input type="hidden" name="__entityType" value="@Model.EntityType.FullName" />
+
+				<div class="db-row-index">@i</div>
+
+				@foreach (var field in Model.FieldInfos)
+				{
+					<input type="text" name="@field.Name" class="db-row-cell @(field.IsKey ? "db-key" : "")" @(field.IsRequired ? "required" : "") />
+				}
+				<div class="db-controls">
+					<button type="submit" asp-action="Insert">Insert</button>
+				</div>
+			</form>
+
+		</div>

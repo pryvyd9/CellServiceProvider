@@ -48,7 +48,8 @@ namespace DbWpfControls.TableControl
 
                 //table.ItemSelector = value;
                 table.Refresh();
-                insertBox.CreateBoxFor(ItemSelector().FirstOrDefault());
+                insertBox.CreateBoxFor(EntityType, DbContext);
+                //insertBox.CreateBoxFor(ItemSelector().FirstOrDefault());
 
                 BlockableButtons["insert"] = insertBox.InsertButton;
             }

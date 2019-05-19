@@ -1,0 +1,36 @@
+﻿
+/* Table */
+.db-table {
+}
+
+/*.db-header {
+	background-color: orangered
+}*/
+
+
+
+.db-row, .db-header {
+	display: flex;
+}
+
+.db-row-index, .db-header-index {
+	width: 50px;
+	min-width: 50px;
+}
+
+.db-row-cell, .db-header-cell {
+	width: 150px;
+}
+
+.db-header-cell, .db-header-index {
+	background-color: orange;
+}
+
+.error-message {
+	color: red;
+}
+
+.db-controls {
+	width: 100px;
+	display: flex;
+}
