@@ -90,6 +90,8 @@ namespace DbFramework
 
         protected override IDbCommand CreateCommand(string commandString, Dictionary<string, object> values)
         {
+            Console.WriteLine($"SQL_CMD: {commandString}");
+
             var command = new NpgsqlCommand
             {
                 CommandText = commandString,

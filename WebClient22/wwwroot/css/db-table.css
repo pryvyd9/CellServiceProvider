@@ -3,28 +3,34 @@
 .db-table {
 }
 
-.db-header {
+/*.db-header {
 	background-color: orangered
-}
+}*/
 
 
 
-.db-row, .db-header, .db-modify-row {
-	display: flex
+.db-row, .db-header {
+	display: flex;
 }
 
 .db-row-index, .db-header-index {
-	width: 50px
+	width: 50px;
+	min-width: 50px;
 }
 
 .db-row-cell, .db-header-cell {
-	width: 150px
+	width: 150px;
 }
 
-.db-modify-label {
-	width: 100px
+.db-header-cell, .db-header-index {
+	background-color: orange;
 }
 
 .error-message {
-	color: red
+	color: red;
+}
+
+.db-controls {
+	width: 100px;
+	display: flex;
 }
