@@ -4,27 +4,31 @@
 
 Uni project
 Variant 7
+ASP.NET Core 2.2 MVC
 
-Cell Phone Service Provider 
+## Overview
+This application provides basic CRUD operations against a postgress database (any really). 
+The UI presents a table and a drop-down list of available tables.
+Each row of table represents a record from the db. To the right of it Delete and Update buttons are located.
+At the end of the table there is an empty row shown for the purpose of inserting new rows
+After applying any CRUD operation the page and the table are updated.
 
-###### Requirements
-- Web project
-- Use ODBC
-###### Functionality
-- Admin can manage customer connection
-- Customer can select one or more services
-- Customer can pay a bill for calls and services
-- Admin can get list of unpaid bills
-- Admin can ban Customer
+## Deployment
+Docker is not required but recommended.
+1. Start database. Dump file is located in a root of the solution and called provider.sql;
+2. Edit appsettings.json to match DBConnection string;
+3. Build the project and run it.
 
-## Configuring system
+
+
+## Tutorial for creating the project
 
 ###### Environtment
 - Windows
 - Docker
 - Visual Studio 2017/2019
-- .net core 3.0 sdk [link](https://dotnet.microsoft.com/download/dotnet-core/3.0)
-- NuGet package Npgsql
+- asp.net core 2.2 sdk [link](https://dotnet.microsoft.com/download/dotnet-core/2.2)
+- NuGet package Npgsql (Postgress connector)
 
 ###### Docker
 1. Pull Postgres image in docker [link](https://docs.docker.com/engine/reference/commandline/image_pull/)
@@ -44,7 +48,7 @@ Cell Phone Service Provider
 
 ###### Visual Studio 
 1. Create asp.net core project
-	- .net core 3.0
+	- asp.net core 2.2
 	- Enable Docker integration
 	- Mvc project
 2. Add package Npgsql [tutorial](https://www.npgsql.org/doc/index.html)
@@ -52,7 +56,7 @@ Cell Phone Service Provider
 	- If deployed on docker
 		- Get ip of container with db
 			`docker inspect CONTAINER`
-			- search for `"Gateway": "FOUND_IP",`
+			- search for `"IPAddress": "FOUND_IP",`
 		- set connection string
 			`Server=FOUND_IP;Port=CONFIGURED_PORT;Database=postgres;User Id=postgres;Password=PSWD;`
 	- If deployed on host

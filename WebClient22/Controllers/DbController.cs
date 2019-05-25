@@ -7,11 +7,19 @@ using Microsoft.AspNetCore.Mvc;
 using System.Reflection;
 using CellServiceProvider.Models;
 using DbFramework;
+using Microsoft.Extensions.Configuration;
 
 namespace WebClient22.Controllers
 {
     public class DbController : Controller
     {
+        IConfiguration configuration;
+
+        public DbController(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
+
         // GET: Db
         public ActionResult Index()
         {
@@ -89,8 +97,6 @@ namespace WebClient22.Controllers
 
                 return ShowTable(__entityType);
             }
-
-            //return RedirectToAction(nameof(ShowTable));
         }
 
         [HttpPost]
@@ -142,7 +148,7 @@ namespace WebClient22.Controllers
 
             if (HttpContext.Session.GetInt32("dbContext") is null)
             {
-                string connString = "Server=172.18.0.1;Port=11;Database=provider;User Id=postgres;Password=admin;";
+                string connString = Get("DBConnection:ConnectionString");
 
                 var dbContext = new ProviderContext(connString)
                 {
@@ -166,6 +172,8 @@ namespace WebClient22.Controllers
             };
 
             return View("Index", model);
+
+            string Get(string path) => configuration.GetValue<string>(path);
         }
 
 

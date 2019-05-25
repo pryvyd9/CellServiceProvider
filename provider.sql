@@ -199,6 +199,53 @@ COPY public.bills (id, user_id, cost, due_date, is_paid) FROM stdin;
 --
 
 COPY public.services (id, name, description, cost) FROM stdin;
+11	1239302716	\N	794
+13	1159654684	\N	2101
+14	1716145102	\N	3665
+15	790158410	\N	1857
+16	2040375432	\N	1154
+17	253061374	\N	4105
+18	1436609765	\N	3839
+19	1667965508	\N	2065
+20	1554613674	\N	4305
+21	1589752833	\N	822
+22	1688157228	\N	2438
+23	1717014310	\N	2352
+24	1883178590	\N	3125
+25	877407373	\N	4847
+26	160116142	\N	1630
+27	13145881	\N	2320
+28	874951108	\N	640
+29	266623401	\N	2953
+30	1214590496	\N	632
+31	558284143	\N	1667
+32	2062708619	\N	4671
+33	730538054	\N	633
+34	1366035412	\N	2382
+35	676852020	\N	3850
+36	817179334	\N	4890
+37	1101703205	\N	808
+38	2122008466	\N	2205
+39	763798042	\N	733
+40	1225990479	\N	493
+41	1141269083	\N	989
+42	685227863	\N	2055
+3	1110184397	g	389
+4	102161346	5	1709
+43	g	f	1
+44	g	f	1
+45	f	f	1
+46	g	g	1
+47	f	f	1
+48	f	f	1
+49	f	f	1
+51	cleaning	just some cleaning	1500
+50	a	a12	2
+10	6144114		3669
+5	626317541	no	1522
+52	showing	show must go on	150000000
+6	695692152	what is this?	3794
+12	1302483727	not suited for kids	1915
 \.
 
 
@@ -207,6 +254,7 @@ COPY public.services (id, name, description, cost) FROM stdin;
 --
 
 COPY public.user_groups (id, name) FROM stdin;
+12	monk
 \.
 
 
@@ -215,6 +263,10 @@ COPY public.user_groups (id, name) FROM stdin;
 --
 
 COPY public.users (id, nickname, full_name, group_id, is_active, password) FROM stdin;
+6	yuri	Simpson	12	t	pswd
+1	prizrak9	Pavlo	12	f	noadmin
+8	amakana	Alexander	12	t	pswd
+5	prizrak	Memem	12	f	admin
 \.
 
 
@@ -223,6 +275,7 @@ COPY public.users (id, nickname, full_name, group_id, is_active, password) FROM 
 --
 
 COPY public.users_to_services (user_id, service_id) FROM stdin;
+6	51
 \.
 
 
@@ -230,28 +283,28 @@ COPY public.users_to_services (user_id, service_id) FROM stdin;
 -- Name: bills_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.bills_id_seq', 1, false);
+SELECT pg_catalog.setval('public.bills_id_seq', 1, true);
 
 
 --
 -- Name: services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.services_id_seq', 1, false);
+SELECT pg_catalog.setval('public.services_id_seq', 52, true);
 
 
 --
 -- Name: user-groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."user-groups_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."user-groups_id_seq"', 4, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 8, true);
 
 
 --
