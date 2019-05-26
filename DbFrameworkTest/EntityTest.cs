@@ -39,12 +39,12 @@ namespace DbFrameworkTest
 
             var expected = new []
             {
-                new FieldInfo("nickname",   false,  typeof(Db<string>)),
-                new FieldInfo("id",         false,  typeof(Db<int>)),
-                new FieldInfo("is_active",  false,  typeof(Db<bool>)),
-                new FieldInfo("full_name",  true,   typeof(Db<string>)),
-                new FieldInfo("group_id",   false,  typeof(Db<int>)),
-                new FieldInfo("password",   false,  typeof(Db<string>)),
+                new FieldInfo("nickname",   false, true, false,  typeof(Db<string>)),
+                new FieldInfo("id",         false, false, true, typeof(Db<int>)),
+                new FieldInfo("is_active",  false, false, false, typeof(Db<bool>)),
+                new FieldInfo("full_name",  true,  false, false, typeof(Db<string>)),
+                new FieldInfo("group_id",   false, true, false, typeof(Db<int>)),
+                new FieldInfo("password",   false, true, false, typeof(Db<string>)),
             };
 
             var result = user.GetFieldInfos();
